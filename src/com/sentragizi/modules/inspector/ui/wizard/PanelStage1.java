@@ -105,6 +105,11 @@ public class PanelStage1 extends javax.swing.JPanel {
         });
 
         btnBatal.setText("Kembali");
+        btnBatal.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBatalActionPerformed(evt);
+            }
+        });
 
         tblChecklist.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -268,58 +273,40 @@ public class PanelStage1 extends javax.swing.JPanel {
     }//GEN-LAST:event_btnCekItemActionPerformed
 
     private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
-        // TODO add your handling code here:
-        int row = tblChecklist.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Pilih baris bahan di tabel dulu!");
-            return;
+        // Cek apakah semua baris sudah LOLOS?
+        if (tableModel.getRowCount() == 0) return;
+        
+        for(int i=0; i<tableModel.getRowCount(); i++) {
+            String status = tableModel.getValueAt(i, 1).toString();
+            if (!status.equals("✅ LOLOS")) {
+                JOptionPane.showMessageDialog(this, "Semua item harus berstatus LOLOS sebelum disimpan!");
+                return;
+            }
         }
         
-        String itemName = tableModel.getValueAt(row, 0).toString(); // Misal: "Daging Ayam"
-        
-        // 1. Pilih Foto
-        JFileChooser fc = new JFileChooser();
-        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            String path = fc.getSelectedFile().getAbsolutePath();
+        // Simpan Data
+        try {
+            String uuid = UUID.randomUUID().toString();
+            Menu m = (Menu) cmbMenu.getSelectedItem();
+            String vendorRaw = cmbVendor.getSelectedItem().toString();
+            int vendorId = Integer.parseInt(vendorRaw.split(" - ")[0]);
+            int inspectorId = SessionManager.getCurrentUser() != null ? SessionManager.getCurrentUser().getId() : 1; 
             
-            // 2. Panggil AI
-            try {
-                ProcessBuilder pb = new ProcessBuilder(
-                    AppConfig.PYTHON_EXEC,
-                    AppConfig.SCRIPT_FRESHNESS,
-                    path,
-                    itemName // Kirim nama item sebagai target validasi
-                );
-                Process p = pb.start();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                String jsonStr = reader.readLine();
-                
-                // Debugging
-                if (jsonStr == null) {
-                     JOptionPane.showMessageDialog(this, "Python Error: Tidak ada output.");
-                     return;
-                }
-
-                JSONParser parser = new JSONParser();
-                JSONObject json = (JSONObject) parser.parse(jsonStr);
-                String status = (String) json.get("status");
-                String notes = (String) json.get("notes");
-                
-                // 3. Update Tabel
-                if ("PASS".equals(status)) {
-                    tableModel.setValueAt("✅ LOLOS", row, 1);
-                    tableModel.setValueAt(path, row, 2); // Simpan path foto
-                    JOptionPane.showMessageDialog(this, "AI: " + notes);
-                } else if ("WRONG_ITEM".equals(status)) {
-                    JOptionPane.showMessageDialog(this, "SALAH BARANG!\n" + notes, "Error", JOptionPane.WARNING_MESSAGE);
-                } else {
-                    tableModel.setValueAt("❌ BUSUK", row, 1);
-                    JOptionPane.showMessageDialog(this, "AI: " + notes, "GAGAL", JOptionPane.ERROR_MESSAGE);
-                }
-                
-            } catch (Exception e) { e.printStackTrace(); }
-        }
+            // Ambil path foto pertama saja sebagai perwakilan (atau gabung stringnya)
+            String samplePhoto = tableModel.getValueAt(0, 2).toString();
+            
+            repo.startBatch(uuid, m.getId(), inspectorId, vendorId, samplePhoto, "PASS", "Semua bahan segar.");
+            
+            JOptionPane.showMessageDialog(this, "Semua bahan tervalidasi! Masuk antrean masak.");
+            frame.showPage("QUEUE");
+            
+        } catch (Exception e) { e.printStackTrace(); }
     }//GEN-LAST:event_btnSimpanActionPerformed
+
+    private void btnBatalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBatalActionPerformed
+        // TODO add your handling code here:
+        frame.showPage("QUEUE");
+    }//GEN-LAST:event_btnBatalActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
