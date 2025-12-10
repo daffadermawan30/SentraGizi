@@ -1,0 +1,23 @@
+"${mapCanvasId}": {
+    "id": "${mapCanvasId}",
+    "type": "googlemap",
+    "module": "jasperreports-map",
+    "instanceData" : {
+        "latitude": ${latitude},
+        "longitude": ${longitude},
+        "zoom": ${zoom},
+        "mapType": "${mapType}",
+        "mapId": "${mapId}",
+        "useMarkerClustering": ${useMarkerClustering},
+        "useMarkerSpidering": ${useMarkerSpidering},
+        "defaultMarkerIcon": "${defaultMarkerIcon}",
+        "markerList": ${markerList},
+        "pathsList": ${pathsList},
+        "legendProperties": ${legendProperties},
+        "resetMapProperties": ${resetMapProperties},
+        "googleMapsApiUrl": "${googleMapsApiUrl}",
+        "markerClustererApiUrl": "${markerClustererApiUrl}",
+        "jasperreportsMapApiScriptLocation": "${jasperreportsMapApiScriptLocation}",
+        "overlappingMarkerSpiderfierApiScriptLocation": "${overlappingMarkerSpiderfierApiScriptLocation}"
+    }
+}

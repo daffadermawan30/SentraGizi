@@ -1,0 +1,15 @@
+# Abaikan folder build NetBeans
+/build/
+/dist/
+/nbproject/private/
+
+# Abaikan Folder Python (Karena besar > 100MB, GitHub akan menolak)
+/python_embed/
+
+# Abaikan Folder Storage (Isinya foto sampah hasil tes)
+/storage/uploads/
+/storage/qr_codes/
+
+# Abaikan file sistem
+Thumbs.db
+.DS_Store

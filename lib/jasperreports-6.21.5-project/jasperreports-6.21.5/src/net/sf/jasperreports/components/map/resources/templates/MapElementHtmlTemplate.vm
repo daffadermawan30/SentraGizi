@@ -1,0 +1,74 @@
+<div style='width: ${elementWidth}px; height: ${elementHeight}px;
+	#if(${backgroundColor}) 
+		background-color: \#${backgroundColor};
+	#end
+'>
+	<div id='${mapCanvasId}' style='width: 100%; height: 100%; overflow: auto'></div>
+	<div class="jr_map_legend_wrapper" style="display: none;">
+		<div id="${mapCanvasId}_legend" dragable="false" style="display: flex;justify-content:flex-start;font-family:Roboto,Arial,sans-serif;background-color:#fff;margin:10px;border-radius:2px;user-select:none;padding:5px 10px 5px 10px;overflow:auto;"></div>
+	</div>
+</div>
+
+#if (!${gotReportContext})
+	#if (${exporterFirstAttempt})
+	<script>
+		${externalScriptLoadApi}
+
+		const __jr__modules__ = new Map();
+		let __jr__define__;
+
+		(function() {
+			// keep define in isolated scope
+			const define = (moduleName, moduleFn) => {
+				if (!__jr__modules__.has(moduleName)) {
+					__jr__modules__.set(moduleName, new Promise((resolve, reject) => {
+						try {
+							resolve(moduleFn());
+						} catch(e) {
+							reject(e);
+						}
+					}));
+				}
+			};
+
+			// these scripts call define
+			${overlappingMarkerSpiderfierScript}
+
+			${jasperreportsMapApiScript}
+
+			__jr__define__ = define;
+		})();
+
+		const __jr__require__ = function(moduleNamesArr, processingFn) {
+			const modulePromises = moduleNamesArr.map(moduleName => __jr__modules__.get(moduleName));
+			return Promise.all(modulePromises)
+					.then(processingFn)
+					.catch(e => window["console"] && window["console"].error(e));
+		};
+
+		__jr__define__("googleMapsApi", function() {
+			return __jr__jsonp__load__script__("${googleMapsApiUrl}");
+		});
+
+		__jr__define__("markerClustererApi", function() {
+			return __jr__load__script__("${markerClustererApiUrl}");
+		});
+	</script>
+	#end
+	<script type="text/javascript">
+		__jr__require__(["jasperreportsMapApi", "googleMapsApi", "markerClustererApi", "overlappingMarkerSpiderfierApi"], async (promiseReturnArr) => {
+			const jasperreports = await promiseReturnArr[0]();
+
+			let jrMapConfig = {
+				${mapConfig}
+			};
+			jrMapConfig = jrMapConfig["${mapCanvasId}"];
+
+			jasperreports.map.draw({
+				mapCanvasId: "${mapCanvasId}",
+				mapInstanceData: jrMapConfig.instanceData,
+				isForExport: false
+			});
+		});
+	</script>
+#end
