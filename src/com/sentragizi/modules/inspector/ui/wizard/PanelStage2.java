@@ -5,9 +5,16 @@ import com.sentragizi.modules.ai_engine.ComponentCounter;
 import com.sentragizi.modules.inspector.repositories.InspectionRepository;
 import com.sentragizi.modules.inspector.services.QRCodeService;
 import com.sentragizi.modules.inspector.ui.InspectorMainFrame;
+import com.sentragizi.shared.utils.FileUploader;
+import java.awt.Image;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import org.json.simple.JSONObject;
@@ -18,6 +25,8 @@ public class PanelStage2 extends javax.swing.JPanel {
     String currentUUID;
     InspectionRepository repo = new InspectionRepository();
     boolean isPassed = false; 
+    private String tempUploadPath = "";
+    
 
     public PanelStage2(InspectorMainFrame f) {
         this.frame = f;
@@ -38,7 +47,6 @@ public class PanelStage2 extends javax.swing.JPanel {
     }
 
     // Tombol Upload (Sama kayak biasa)
-    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -53,14 +61,21 @@ public class PanelStage2 extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         txtHasilAI = new javax.swing.JTextArea();
         btnSimpan = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+
+        setPreferredSize(new java.awt.Dimension(648, 311));
 
         lblInfo.setText("Batch Id");
 
-        txtKoki.setText("Koki");
-
-        txtSuhu.setText("Suhu");
-
-        txtBerat.setText("Berat");
+        txtBerat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtBeratActionPerformed(evt);
+            }
+        });
 
         btnUpload.setText("upload");
         btnUpload.addActionListener(new java.awt.event.ActionListener() {
@@ -87,106 +102,143 @@ public class PanelStage2 extends javax.swing.JPanel {
             }
         });
 
+        jLabel1.setText("Koki:");
+
+        jLabel2.setText("Suhu:");
+
+        jLabel3.setText("Berat:");
+
+        jLabel4.setText("Gambar:");
+
+        jLabel5.setFont(new java.awt.Font("Segoe UI Emoji", 1, 18)); // NOI18N
+        jLabel5.setText("Tahap 2");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(29, 29, 29)
-                .addComponent(lblInfo)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(158, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(134, 134, 134)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtBerat, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtSuhu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtKoki, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(129, 129, 129))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(txtFoto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnUpload)
-                        .addGap(66, 66, 66))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(btnCek)
-                        .addGap(119, 119, 119))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(76, 76, 76))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(btnSimpan)
-                        .addGap(116, 116, 116))))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(txtFoto, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(btnUpload, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(layout.createSequentialGroup()
+                                    .addGap(14, 14, 14)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel1)
+                                        .addComponent(jLabel2)
+                                        .addComponent(jLabel3))
+                                    .addGap(107, 107, 107)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(txtSuhu, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(txtKoki, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(txtBerat, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(50, 50, 50)
+                                        .addComponent(btnSimpan)
+                                        .addGap(46, 46, 46)
+                                        .addComponent(btnCek)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(219, 219, 219)
+                        .addComponent(jLabel5))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(lblInfo)))
+                .addContainerGap(169, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lblInfo)
-                .addGap(31, 31, 31)
-                .addComponent(txtKoki, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(19, 19, 19)
+                .addComponent(jLabel5)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(67, 67, 67)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(txtKoki, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(txtSuhu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(txtSuhu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(txtBerat, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(txtBerat, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtFoto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
                     .addComponent(btnUpload))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnCek)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnSimpan)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnCek)
+                    .addComponent(btnSimpan))
+                .addGap(4, 4, 4)
+                .addComponent(lblInfo)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadActionPerformed
         JFileChooser fc = new JFileChooser();
-        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) 
-            txtFoto.setText(fc.getSelectedFile().getAbsolutePath());
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            tempUploadPath = fc.getSelectedFile().getAbsolutePath();
+            txtFoto.setText(tempUploadPath);
+        }
     }//GEN-LAST:event_btnUploadActionPerformed
 
     private void btnCekActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCekActionPerformed
-        if (txtFoto.getText().isEmpty()) return;
+        if (tempUploadPath.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Silakan upload foto terlebih dahulu!");
+            return;
+        }
+        
+        // Perluas logika: Jika belum disalin, kita copy ke temp folder Web untuk dicek AI
         
         try {
-            // 1. Panggil Python Counting
+            // Kita tidak perlu menyalinnya ke tempat final sebelum dicek, kita langsung pakai path asli untuk cek AI
+            // Atau jika perlu path Web untuk Python, kita lakukan seperti di Stage 1:
+            // String fullPathWeb = FileUploader.copyFile(tempUploadPath, AppConfig.DIR_UPLOAD_COOKED);
+            // new File(fullPathWeb).delete(); // Hapus setelah cek
+
+            // Langsung panggil Python dengan path asli karena Python hanya membaca data.
             ProcessBuilder pb = new ProcessBuilder(
                 AppConfig.PYTHON_EXEC,
                 AppConfig.SCRIPT_COUNTING,
-                txtFoto.getText()
+                tempUploadPath // Kirim path asli
             );
-            pb.redirectErrorStream(true); // Gabungkan error stream
+            pb.redirectErrorStream(true);
             Process p = pb.start();
             
             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String jsonStr = r.readLine();
             
-            // Tambahkan validasi jika output kosong atau error
             if (jsonStr == null || !jsonStr.trim().startsWith("{")) {
-                 StringBuilder errorOutput = new StringBuilder();
-                 String line;
-                 while ((line = r.readLine()) != null) {
-                     errorOutput.append(line).append("\n");
-                 }
-                 JOptionPane.showMessageDialog(this, "Error dari Python: " + (jsonStr != null ? jsonStr : "") + "\n" + errorOutput.toString());
+                 JOptionPane.showMessageDialog(this, "Error dari Python: " + jsonStr);
                  return;
             }
             
-            // 2. Parse JSON
             JSONParser parser = new JSONParser();
             JSONObject json = (JSONObject) parser.parse(jsonStr);
             JSONObject counts = (JSONObject) json.get("counts");
             
-            // 3. Ambil Data Wajib dari DB
             int menuId = repo.getMenuIdByUUID(currentUUID);
             List<String> required = repo.getAllComponents(menuId);
             
-            // 4. Bandingkan
             ComponentCounter counter = new ComponentCounter();
             String analysisResult = counter.compareComponents(required, counts);
             
@@ -194,7 +246,7 @@ public class PanelStage2 extends javax.swing.JPanel {
             
             if (analysisResult.contains("PERINGATAN")) {
                 JOptionPane.showMessageDialog(this, "PERINGATAN: Komponen tidak lengkap!", "Indikasi Korupsi", JOptionPane.WARNING_MESSAGE);
-                isPassed = false; // Gagal, tapi tombol simpan dibuka biar bisa Override manual
+                isPassed = false; 
             } else {
                 JOptionPane.showMessageDialog(this, "SEMPURNA! Komponen Lengkap.", "Sukses", JOptionPane.INFORMATION_MESSAGE);
                 isPassed = true;
@@ -203,62 +255,87 @@ public class PanelStage2 extends javax.swing.JPanel {
             
         } catch (Exception e) { 
             e.printStackTrace(); 
-            JOptionPane.showMessageDialog(this, "Terjadi kesalahan: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Terjadi kesalahan cek AI: " + e.getMessage());
         }
     }//GEN-LAST:event_btnCekActionPerformed
 
     private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
+        if (tempUploadPath.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Foto masakan harus diupload!");
+            return;
+        }
+        
         try {
             double suhu = Double.parseDouble(txtSuhu.getText());
             int berat = Integer.parseInt(txtBerat.getText());
             
             if(suhu < 75 || berat < 400) {
                 int confirm = JOptionPane.showConfirmDialog(this, 
-                    "PERINGATAN: Suhu (" + suhu + "C) atau Berat (" + berat + "g) dibawah standar!\nApakah Anda yakin ingin tetap menyimpan?", 
-                    "Konfirmasi Simpan", 
-                    JOptionPane.YES_NO_OPTION, 
-                    JOptionPane.WARNING_MESSAGE);
-                
-                if (confirm != JOptionPane.YES_OPTION) {
-                    return;
-                }
+                    "PERINGATAN: Suhu/Berat dibawah standar!\nTetap simpan?", 
+                    "Konfirmasi Simpan", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (confirm != JOptionPane.YES_OPTION) return;
             }
             
+            // 1. Simpan Foto Masakan (Web & Lokal)
+            String webFileName = FileUploader.copyFile(tempUploadPath, AppConfig.DIR_UPLOAD_COOKED);
+            String finalSavedPath = AppConfig.DIR_UPLOAD_COOKED + webFileName;
+            FileUploader.copyFile(tempUploadPath, AppConfig.DIR_ARCHIVE_COOKED);
+            
+            // 2. Simpan Database
             String status = isPassed ? "COMPLETED" : "REJECTED_FINAL";
-            // Pastikan Anda memanggil saveFinal dengan parameter yang benar sesuai definisi di InspectionRepository
-            repo.saveFinal(currentUUID, txtKoki.getText(), suhu, berat, txtFoto.getText(), txtHasilAI.getText(), status);
+            repo.saveFinal(currentUUID, txtKoki.getText(), suhu, berat, finalSavedPath, txtHasilAI.getText(), status);
             
-            // Generate QR
+            // 3. Generate QR Code
             QRCodeService qr = new QRCodeService();
-            // Gunakan separator file yang benar atau "/" yang aman di Java
-            String pathQR = AppConfig.DIR_QR + currentUUID + ".png";
+            String pathQRWeb = AppConfig.DIR_QR + currentUUID + ".png"; // Path XAMPP
+            String qrUrl = AppConfig.BASE_URL + "index.php?id=" + currentUUID;
             
-            // Ganti localhost dengan IP jika ingin diakses dari device lain
-            String qrUrl = "http://localhost/sentragizi/index.php?id=" + currentUUID;
-            
-            boolean qrSuccess = qr.generate(qrUrl, pathQR);
+            boolean qrSuccess = qr.generate(qrUrl, pathQRWeb);
             
             if (qrSuccess) {
-                JOptionPane.showMessageDialog(this, "SELESAI! Data tersimpan & QR Code tercetak.\nLokasi: " + pathQR);
+                // >>> PERUBAHAN UTAMA: COPY QR KE LOKAL <<<
+                String pathQRLocal = AppConfig.DIR_ARCHIVE_QR + currentUUID + ".png";
+                Files.copy(
+                    new File(pathQRWeb).toPath(), 
+                    new File(pathQRLocal).toPath(), 
+                    StandardCopyOption.REPLACE_EXISTING
+                );
+                
+                // Tampilkan QR Code di Pop-up
+                ImageIcon icon = new ImageIcon(pathQRLocal); 
+                Image img = icon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+                
+                JOptionPane.showMessageDialog(this, 
+                    "SELESAI! Data tersimpan & QR Code dicadangkan di lokal.", 
+                    "Sukses", JOptionPane.INFORMATION_MESSAGE, new ImageIcon(img));
             } else {
                 JOptionPane.showMessageDialog(this, "Data tersimpan, tapi GAGAL membuat QR Code.", "Warning", JOptionPane.WARNING_MESSAGE);
             }
             
-            frame.showPage("QUEUE"); // Balik ke antrean
+            frame.showPage("QUEUE");
             
         } catch(NumberFormatException e) { 
-            JOptionPane.showMessageDialog(this, "Input suhu atau berat harus berupa angka!", "Input Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Input suhu/berat harus angka!", "Input Error", JOptionPane.ERROR_MESSAGE);
         } catch(Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Terjadi kesalahan saat menyimpan: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error Simpan: " + e.getMessage());
         }
     }//GEN-LAST:event_btnSimpanActionPerformed
+
+    private void txtBeratActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBeratActionPerformed
+
+    }//GEN-LAST:event_txtBeratActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCek;
     private javax.swing.JButton btnSimpan;
     private javax.swing.JButton btnUpload;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblInfo;
     private javax.swing.JTextField txtBerat;

@@ -4,6 +4,7 @@ import com.sentragizi.infrastructure.config.AppConfig;
 import com.sentragizi.modules.inspector.repositories.InspectionRepository;
 import com.sentragizi.modules.inspector.ui.InspectorMainFrame;
 import com.sentragizi.shared.models.Menu;
+import com.sentragizi.shared.utils.FileUploader; // Wajib Import
 import com.sentragizi.shared.utils.SessionManager;
 import com.sentragizi.infrastructure.database.DatabaseConnection;
 import java.io.BufferedReader;
@@ -16,12 +17,15 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import java.io.IOException; 
+import java.io.File;
 
 public class PanelStage1 extends javax.swing.JPanel {
     InspectorMainFrame frame;
     InspectionRepository repo = new InspectionRepository();
     DefaultTableModel tableModel;
 
+    private String currentOriginalFileName = "";
     public PanelStage1(InspectorMainFrame f) {
         this.frame = f;
         initComponents();
@@ -61,16 +65,27 @@ public class PanelStage1 extends javax.swing.JPanel {
     
     
     private void simpanData(String status, String notes) {
-        String uuid = UUID.randomUUID().toString();
-        Menu m = (Menu) cmbMenu.getSelectedItem();
-        String vendorRaw = cmbVendor.getSelectedItem().toString();
-        int vendorId = Integer.parseInt(vendorRaw.split(" - ")[0]);
-        // Anggap inspector ID 2 (Petugas)
-        
-        repo.startBatch(uuid, m.getId(), 2, vendorId, txtFoto.getText(), status, notes);
-        
-        JOptionPane.showMessageDialog(this, "Data tersimpan.");
-        frame.showPage("QUEUE");
+        try {
+            String uuid = UUID.randomUUID().toString();
+            Menu m = (Menu) cmbMenu.getSelectedItem();
+            String vendorRaw = cmbVendor.getSelectedItem().toString();
+            int vendorId = Integer.parseInt(vendorRaw.split(" - ")[0]);
+            int inspectorId = SessionManager.getCurrentUser() != null 
+        ? SessionManager.getCurrentUser().getId() 
+        : 1;
+            
+            // Ambil path foto pertama yang sudah di Htdocs
+            String samplePhoto = tableModel.getValueAt(0, 2).toString();
+            
+            repo.startBatch(uuid, m.getId(), inspectorId, vendorId, samplePhoto, "PASS", "Semua bahan segar.");
+            
+            JOptionPane.showMessageDialog(this, "Semua bahan tervalidasi! Masuk antrean masak.");
+            frame.showPage("QUEUE");
+            
+        } catch (Exception e) { 
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Gagal Simpan Database: " + e.getMessage());
+        }
     }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -87,6 +102,7 @@ public class PanelStage1 extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         btnSimpan = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
 
         cmbMenu.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cmbMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -137,65 +153,76 @@ public class PanelStage1 extends javax.swing.JPanel {
             }
         });
 
+        jLabel4.setFont(new java.awt.Font("Segoe UI Emoji", 1, 18)); // NOI18N
+        jLabel4.setText("Tahap 1");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(14, 14, 14)
+                .addGap(15, 15, 15)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addGap(7, 7, 7))
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel2)
-                                .addComponent(jLabel3)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(cmbVendor, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(cmbMenu, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(37, 37, 37)
-                                .addComponent(txtFoto, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel1)
+                                        .addGap(7, 7, 7))
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel2)
+                                        .addComponent(jLabel3)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(cmbVendor, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(cmbMenu, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(37, 37, 37)
+                                        .addComponent(txtFoto, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(btnBatal)
+                                .addGap(58, 58, 58)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnSimpan)
+                                    .addComponent(btnCekItem))))
+                        .addGap(22, 22, 22))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(btnBatal)
-                        .addGap(58, 58, 58)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnSimpan)
-                            .addComponent(btnCekItem))))
-                .addGap(31, 31, 31))
+                        .addComponent(jLabel4)
+                        .addGap(93, 93, 93))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(25, Short.MAX_VALUE)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(9, 9, 9))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(47, 47, 47)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(cmbMenu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                        .addContainerGap(16, Short.MAX_VALUE)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(cmbMenu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(cmbVendor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel2))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(txtFoto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel3))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btnCekItem)))
+                        .addGap(35, 35, 35)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(cmbVendor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtFoto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnCekItem)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnBatal)
-                    .addComponent(btnSimpan))
-                .addGap(38, 38, 38))
+                            .addComponent(btnBatal)
+                            .addComponent(btnSimpan))))
+                .addGap(20, 20, 20))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -226,49 +253,73 @@ public class PanelStage1 extends javax.swing.JPanel {
             return;
         }
         
-        String itemName = tableModel.getValueAt(row, 0).toString(); // Misal: "Daging Ayam"
+        String itemName = tableModel.getValueAt(row, 0).toString();
         
-        // 1. Pilih Foto
+        String sourcePath = "";
+        
         JFileChooser fc = new JFileChooser();
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            String path = fc.getSelectedFile().getAbsolutePath();
+            sourcePath = fc.getSelectedFile().getAbsolutePath();
+            // >>> PERUBAHAN: Simpan nama file asli <<<
+            currentOriginalFileName = fc.getSelectedFile().getName(); 
+            txtFoto.setText(sourcePath); 
+        } else {
+            return;
+        }
+        
+        String fullPathWeb = "";
+        try {
+            // A. Arsip Web (Path ini akan berisi UUID/ID Acak)
+            String webFileName = FileUploader.copyFile(sourcePath, AppConfig.DIR_UPLOAD_RAW);
+            fullPathWeb = AppConfig.DIR_UPLOAD_RAW + webFileName;
             
-            // 2. Panggil AI
-            try {
-                ProcessBuilder pb = new ProcessBuilder(
-                    AppConfig.PYTHON_EXEC,
-                    AppConfig.SCRIPT_FRESHNESS,
-                    path,
-                    itemName // Kirim nama item sebagai target validasi
-                );
-                Process p = pb.start();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                String jsonStr = reader.readLine();
-                
-                // Debugging
-                if (jsonStr == null) {
-                     JOptionPane.showMessageDialog(this, "Python Error: Tidak ada output.");
-                     return;
-                }
+            // B. Arsip Lokal
+            FileUploader.copyFile(sourcePath, AppConfig.DIR_ARCHIVE_RAW); 
+            
+            // >>> PERUBAHAN: Kirim 3 Parameter ke Python <<<
+            // 1. Path file (yang sudah di-rename jadi UUID)
+            // 2. Item yang dicari
+            // 3. Nama file asli (untuk verifikasi kata kunci "Mocking")
+            ProcessBuilder pb = new ProcessBuilder(
+                AppConfig.PYTHON_EXEC,
+                AppConfig.SCRIPT_FRESHNESS,
+                fullPathWeb,            
+                itemName,
+                currentOriginalFileName 
+            );
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String jsonStr = reader.readLine();
+            
+            if (jsonStr == null || !jsonStr.trim().startsWith("{")) {
+                 JOptionPane.showMessageDialog(this, "Python Error: " + jsonStr);
+                 return;
+            }
 
-                JSONParser parser = new JSONParser();
-                JSONObject json = (JSONObject) parser.parse(jsonStr);
-                String status = (String) json.get("status");
-                String notes = (String) json.get("notes");
-                
-                // 3. Update Tabel
-                if ("PASS".equals(status)) {
-                    tableModel.setValueAt("✅ LOLOS", row, 1);
-                    tableModel.setValueAt(path, row, 2); // Simpan path foto
-                    JOptionPane.showMessageDialog(this, "AI: " + notes);
-                } else if ("WRONG_ITEM".equals(status)) {
-                    JOptionPane.showMessageDialog(this, "SALAH BARANG!\n" + notes, "Error", JOptionPane.WARNING_MESSAGE);
-                } else {
-                    tableModel.setValueAt("❌ BUSUK", row, 1);
-                    JOptionPane.showMessageDialog(this, "AI: " + notes, "GAGAL", JOptionPane.ERROR_MESSAGE);
-                }
-                
-            } catch (Exception e) { e.printStackTrace(); }
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(jsonStr);
+            String status = (String) json.get("status");
+            String notes = (String) json.get("notes");
+            
+            if ("PASS".equals(status)) {
+                tableModel.setValueAt("✅ LOLOS", row, 1);
+                tableModel.setValueAt(fullPathWeb, row, 2); 
+                JOptionPane.showMessageDialog(this, "AI: " + notes);
+            } else if ("WRONG_ITEM".equals(status)) {
+                new File(fullPathWeb).delete();
+                JOptionPane.showMessageDialog(this, "SALAH BARANG!\n" + notes, "Error", JOptionPane.WARNING_MESSAGE);
+            } else {
+                new File(fullPathWeb).delete();
+                tableModel.setValueAt("❌ BUSUK", row, 1);
+                JOptionPane.showMessageDialog(this, "AI: " + notes, "GAGAL", JOptionPane.ERROR_MESSAGE);
+            }
+            
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "GAGAL SALIN FILE: Cek izin folder.\n" + e.getMessage(), "Error I/O", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        } catch (Exception e) { 
+            e.printStackTrace();
         }
     }//GEN-LAST:event_btnCekItemActionPerformed
 
@@ -318,6 +369,7 @@ public class PanelStage1 extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable tblChecklist;
     private javax.swing.JTextField txtFoto;

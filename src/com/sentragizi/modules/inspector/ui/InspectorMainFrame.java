@@ -14,6 +14,10 @@ public class InspectorMainFrame extends javax.swing.JFrame {
     public InspectorMainFrame() {
         initComponents();
         
+        this.setTitle("Inspector Dashboard - SentraGizi");
+        this.setSize(648, 311); // Ukuran default yang nyaman
+        this.setLocationRelativeTo(null); // Tengah layar
+        
         container = new JPanel(new CardLayout());
         this.setContentPane(container); // Jadikan panel ini konten utama
         
@@ -26,7 +30,7 @@ public class InspectorMainFrame extends javax.swing.JFrame {
         container.add(new PanelStage2(this), "STAGE2"); 
         
         cards.show(container, "QUEUE"); // Tampilkan antrean dulu
-        this.setSize(800, 600); // Set ukuran default
+
         
         
     }
