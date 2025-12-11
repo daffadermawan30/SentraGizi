@@ -15,7 +15,7 @@ public class InspectorMainFrame extends javax.swing.JFrame {
         initComponents();
         
         this.setTitle("Inspector Dashboard - SentraGizi");
-        this.setSize(648, 311); // Ukuran default yang nyaman
+        this.setSize(560, 460); // Ukuran default yang nyaman
         this.setLocationRelativeTo(null); // Tengah layar
         
         container = new JPanel(new CardLayout());
