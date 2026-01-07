@@ -11,12 +11,15 @@ public class InspectionDetail {
     private boolean teksturOk;
     private String statusAi;
     private String statusFinal;
+    
+    // --- TAMBAHAN FIELD CATATAN ---
+    private String followUpNote; 
 
     // Constructor Kosong
     public InspectionDetail() {}
 
-    // Constructor Lengkap
-    public InspectionDetail(int componentId, int vendorId, boolean bau, boolean rasa, boolean tekstur, String ai, String finalStatus, String path) {
+    // Constructor Lengkap (UPDATE: Tambahkan String note di akhir)
+    public InspectionDetail(int componentId, int vendorId, boolean bau, boolean rasa, boolean tekstur, String ai, String finalStatus, String path, String note) {
         this.componentId = componentId;
         this.vendorId = vendorId;
         this.bauOk = bau;
@@ -25,9 +28,10 @@ public class InspectionDetail {
         this.statusAi = ai;
         this.statusFinal = finalStatus;
         this.photoPath = path;
+        this.followUpNote = note; // <--- Simpan
     }
 
-    // Getter dan Setter
+    // Getter dan Setter Standar
     public int getVendorId() { return vendorId; }
     public void setVendorId(int vendorId) { this.vendorId = vendorId; }
 
@@ -39,9 +43,9 @@ public class InspectionDetail {
     
     public String getStatusFinal() { return statusFinal; }
     public String getPhotoPath() { return photoPath; }
+    public String getStatusAi() { return statusAi; }
 
-    // --- BAGIAN YANG SUDAH DIPERBAIKI ---
-    public String getStatusAi() {
-        return statusAi; // Sekarang mengembalikan nilai, bukan Error
-    }
+    // --- GETTER SETTER BARU ---
+    public String getFollowUpNote() { return followUpNote; }
+    public void setFollowUpNote(String followUpNote) { this.followUpNote = followUpNote; }
 }

@@ -59,7 +59,8 @@ public class PanelAdminHistory extends JPanel {
         add(pnlHeader, BorderLayout.NORTH);
 
         // --- 2. TABEL DATA ---
-        String[] columns = {"ID Batch", "Waktu", "Menu Masakan", "Petugas", "Status", "Aksi", "FullUUID"};
+        // Menambahkan kolom "Alert" (Index 5)
+        String[] columns = {"ID Batch", "Waktu", "Menu Masakan", "Petugas", "Status", "Alert", "Aksi", "FullUUID"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int col) {
@@ -68,22 +69,23 @@ public class PanelAdminHistory extends JPanel {
         };
 
         table = new JTable(tableModel);
-        table.setRowHeight(40);
+        table.setRowHeight(45);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         table.setSelectionBackground(new Color(232, 240, 254));
         table.setSelectionForeground(Color.BLACK);
+        table.setShowVerticalLines(false);
         
-        // Sembunyikan Full UUID (Index 6)
-        table.getColumnModel().getColumn(6).setMinWidth(0);
-        table.getColumnModel().getColumn(6).setMaxWidth(0);
-        table.getColumnModel().getColumn(6).setWidth(0);
+        // Sembunyikan Full UUID (Index 7)
+        table.getColumnModel().getColumn(7).setMinWidth(0);
+        table.getColumnModel().getColumn(7).setMaxWidth(0);
+        table.getColumnModel().getColumn(7).setWidth(0);
 
         // Header Style
         JTableHeader header = table.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 13));
         header.setBackground(new Color(240, 240, 240));
 
-        // Renderer Status Warna
+        // Renderer Status Warna (Index 4)
         table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -102,6 +104,25 @@ public class PanelAdminHistory extends JPanel {
             }
         });
 
+        // Renderer Alert (Index 5) - UNTUK MENAMPILKAN TANDA PERINGATAN
+        table.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel c = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                String val = (String) value;
+                if (val != null && !val.isEmpty() && !val.equals("-")) {
+                    c.setForeground(new Color(230, 126, 34)); // Orange Warning
+                    c.setText("⚠️ " + val);
+                    c.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                } else {
+                    c.setText("-");
+                    c.setForeground(Color.LIGHT_GRAY);
+                }
+                setHorizontalAlignment(JLabel.CENTER);
+                return c;
+            }
+        });
+
         // Event Klik: Buka Dialog Detail
         table.addMouseListener(new MouseAdapter() {
             @Override
@@ -109,9 +130,7 @@ public class PanelAdminHistory extends JPanel {
                 if (e.getClickCount() == 2) {
                     int row = table.getSelectedRow();
                     if (row != -1) {
-                        String uuid = tableModel.getValueAt(row, 6).toString();
-                        // Kita bisa reuse DialogBatchDetail milik Inspector karena fungsinya sama
-                        // Pastikan parent frame-nya kompatibel (casting ke JFrame)
+                        String uuid = tableModel.getValueAt(row, 7).toString(); // Ambil UUID dari kolom hidden
                         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(PanelAdminHistory.this);
                         new DialogBatchDetail(parentFrame, uuid).setVisible(true);
                     }
@@ -122,22 +141,51 @@ public class PanelAdminHistory extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
-        // --- 3. FOOTER (Tombol Cetak Cepat) ---
+        // --- 3. FOOTER ---
         JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnlFooter.setBackground(Color.WHITE);
         
-        JButton btnPrint = new JButton("Cetak Laporan Terpilih");
-        btnPrint.setBackground(new Color(52, 152, 219));
-        btnPrint.setForeground(Color.WHITE);
-        btnPrint.addActionListener(e -> actionPrintSelected());
+        // Tombol 1: Cetak Batch (Per Baris)
+        JButton btnPrintSelected = new JButton("Cetak Detail Batch");
+        btnPrintSelected.addActionListener(e -> actionPrintSelected());
         
-        pnlFooter.add(btnPrint);
+        // Tombol 2: Cetak Rekap (Periode) - BARU
+        JButton btnPrintPeriod = new JButton("📅 Cetak Laporan Periode");
+        btnPrintPeriod.setBackground(new Color(39, 174, 96)); // Hijau
+        btnPrintPeriod.setForeground(Color.WHITE);
+        btnPrintPeriod.addActionListener(e -> actionPrintPeriod()); // <--- Method Baru
+        
+        pnlFooter.add(btnPrintSelected);
+        pnlFooter.add(btnPrintPeriod); // Tambahkan tombol baru
         add(pnlFooter, BorderLayout.SOUTH);
+    }
+    
+    private void actionPrintPeriod() {
+        JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+        DialogDateRange dialog = new DialogDateRange(parent);
+        dialog.setVisible(true);
+
+        if (dialog.isConfirmed()) {
+            String start = dialog.getStartDate();
+            String end = dialog.getEndDate();
+            
+            // Validasi format tanggal sederhana
+            if (start.isEmpty() || end.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Tanggal tidak boleh kosong!");
+                return;
+            }
+
+            PdfReportService pdfService = new PdfReportService();
+            pdfService.generatePeriodReport(start, end);
+        }
     }
 
     private void loadData(String keyword) {
         tableModel.setRowCount(0);
-        String sql = "SELECT i.batch_uuid, i.created_at, m.name as menu_name, u.fullname, i.workflow_status " +
+        
+        // QUERY UPDATE: Menghitung jumlah catatan (notes) yang tidak kosong
+        String sql = "SELECT i.batch_uuid, i.created_at, m.name as menu_name, u.fullname, i.workflow_status, " +
+                     "(SELECT COUNT(*) FROM inspection_details d WHERE d.inspection_id = i.id AND d.follow_up_note IS NOT NULL AND d.follow_up_note != '') as note_count " +
                      "FROM inspections i " +
                      "LEFT JOIN menus m ON i.menu_id = m.id " +
                      "LEFT JOIN users u ON i.inspector_id = u.id " +
@@ -155,13 +203,18 @@ public class PanelAdminHistory extends JPanel {
             while (rs.next()) {
                 String uuid = rs.getString("batch_uuid");
                 String shortId = uuid.substring(0, 8) + "...";
+                int noteCount = rs.getInt("note_count");
                 
+                // Jika ada catatan, beri label "Ada Catatan"
+                String alertText = (noteCount > 0) ? "Ada Catatan" : "-";
+
                 tableModel.addRow(new Object[]{
                     shortId,
                     rs.getString("created_at"),
                     rs.getString("menu_name"),
                     rs.getString("fullname"),
                     rs.getString("workflow_status"),
+                    alertText, // Masuk ke kolom Alert
                     "Lihat Detail",
                     uuid // Hidden
                 });
@@ -175,9 +228,8 @@ public class PanelAdminHistory extends JPanel {
             JOptionPane.showMessageDialog(this, "Pilih baris yang ingin dicetak laporannya.");
             return;
         }
-        String uuid = tableModel.getValueAt(row, 6).toString();
+        String uuid = tableModel.getValueAt(row, 7).toString(); // Ambil UUID (index geser jadi 7)
         
-        // Panggil Service PDF yang sudah kita buat sebelumnya
         PdfReportService pdfService = new PdfReportService();
         pdfService.generateReport(uuid);
     }

@@ -33,7 +33,8 @@ public class InspectionRepository {
 
     // 2. Simpan Detail Inspeksi (Per Item)
     public boolean insertInspectionDetail(long inspectionId, InspectionDetail detail) {
-        String sql = "INSERT INTO inspection_details (inspection_id, component_id, vendor_id, photo_path, bau_ok, rasa_ok, tekstur_ok, status_ai, status_final) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // Tambahkan kolom follow_up_note di SQL
+        String sql = "INSERT INTO inspection_details (inspection_id, component_id, vendor_id, photo_path, bau_ok, rasa_ok, tekstur_ok, status_ai, status_final, follow_up_note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -45,9 +46,11 @@ public class InspectionRepository {
             ps.setBoolean(5, detail.isBauOk());
             ps.setBoolean(6, detail.isRasaOk());
             ps.setBoolean(7, detail.isTeksturOk());
-// Gunakan getter dari objek detail untuk menyimpan hasil AI (misal: "Segar (AI)" atau "Busuk (AI)")
             ps.setString(8, detail.getStatusAi()); 
             ps.setString(9, detail.getStatusFinal());
+            
+            // --- INPUT CATATAN ---
+            ps.setString(10, detail.getFollowUpNote()); 
             
             return ps.executeUpdate() > 0;
         } catch (Exception e) { 
@@ -206,6 +209,31 @@ public class InspectionRepository {
             ps.setString(1, uuid);
             return ps.executeQuery(); 
             // Note: ResultSet ini harus ditutup di kelas pemanggil (PdfService)
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public ResultSet getReportByDateRange(String startDate, String endDate) {
+        // Query ini menggabungkan semua inspeksi dalam rentang waktu
+        // dan menghitung berapa item PASS dan FAIL dalam setiap inspeksi
+        String sql = "SELECT i.batch_uuid, i.created_at, m.name as menu_name, u.fullname as inspector_name, " +
+                     "i.workflow_status, " +
+                     "(SELECT COUNT(*) FROM inspection_details d WHERE d.inspection_id = i.id AND d.status_final = 'PASS') as total_pass, " +
+                     "(SELECT COUNT(*) FROM inspection_details d WHERE d.inspection_id = i.id AND (d.status_final = 'FAIL' OR d.status_final = 'REJECTED')) as total_fail " +
+                     "FROM inspections i " +
+                     "LEFT JOIN menus m ON i.menu_id = m.id " +
+                     "LEFT JOIN users u ON i.inspector_id = u.id " +
+                     "WHERE DATE(i.created_at) BETWEEN ? AND ? " +
+                     "ORDER BY i.created_at ASC";
+
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            return ps.executeQuery();
         } catch (Exception e) {
             e.printStackTrace();
             return null;

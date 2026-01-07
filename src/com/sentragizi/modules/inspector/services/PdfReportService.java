@@ -4,6 +4,7 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.sentragizi.modules.inspector.repositories.InspectionRepository;
 import java.awt.Desktop;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.sql.ResultSet;
 import java.sql.Timestamp; // <--- INI YANG SEBELUMNYA KURANG
@@ -159,10 +160,11 @@ public class PdfReportService {
     }
 
     private void addTableHeader(PdfPTable table, String title) {
-        PdfPCell cell = new PdfPCell(new Phrase(title, fontHeader));
-        cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        table.addCell(cell);
+        PdfPCell header = new PdfPCell();
+        header.setBackgroundColor(BaseColor.LIGHT_GRAY);
+        header.setPhrase(new Phrase(title));
+        header.setHorizontalAlignment(Element.ALIGN_CENTER);
+        table.addCell(header);
     }
     
     private PdfPCell getCheckCell(boolean isOk) {
@@ -170,4 +172,81 @@ public class PdfReportService {
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
         return cell;
     }
+    
+    public void generatePeriodReport(String startDate, String endDate) {
+        Document document = new Document();
+        try {
+            String fileName = "Laporan_Rekap_" + startDate + "_sd_" + endDate + ".pdf";
+            PdfWriter.getInstance(document, new FileOutputStream(fileName));
+            document.open();
+
+            // Judul
+            Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
+            Paragraph title = new Paragraph("Laporan Rekapitulasi Inspeksi Bahan Baku", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+
+            document.add(new Paragraph("Periode: " + startDate + " s/d " + endDate));
+            document.add(new Paragraph("Dicetak pada: " + java.time.LocalDateTime.now()));
+            document.add(Chunk.NEWLINE);
+
+            // Tabel
+            PdfPTable table = new PdfPTable(6); // 6 Kolom
+            table.setWidthPercentage(100);
+            
+            // Header Tabel
+            addTableHeader(table, "Tanggal");
+            addTableHeader(table, "Menu Masakan");
+            addTableHeader(table, "Petugas");
+            addTableHeader(table, "Total Item");
+            addTableHeader(table, "Lolos");
+            addTableHeader(table, "Ditolak");
+
+            // Isi Data
+            InspectionRepository repo = new InspectionRepository();
+            ResultSet rs = repo.getReportByDateRange(startDate, endDate);
+
+            int grandTotalPass = 0;
+            int grandTotalFail = 0;
+
+            if (rs != null) {
+                while (rs.next()) {
+                    int pass = rs.getInt("total_pass");
+                    int fail = rs.getInt("total_fail");
+                    int total = pass + fail;
+                    
+                    grandTotalPass += pass;
+                    grandTotalFail += fail;
+
+                    table.addCell(rs.getString("created_at").substring(0, 10)); // Ambil tanggal saja
+                    table.addCell(rs.getString("menu_name"));
+                    table.addCell(rs.getString("inspector_name"));
+                    table.addCell(String.valueOf(total));
+                    table.addCell(String.valueOf(pass));
+                    table.addCell(String.valueOf(fail));
+                }
+            }
+
+            document.add(table);
+
+            // Footer Statistik
+            document.add(Chunk.NEWLINE);
+            document.add(new Paragraph("Statistik Periode Ini:", new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
+            document.add(new Paragraph("Total Bahan Lolos (PASS): " + grandTotalPass));
+            document.add(new Paragraph("Total Bahan Ditolak (FAIL): " + grandTotalFail));
+
+            document.close();
+            
+            // Buka File Otomatis
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(new File(fileName));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Gagal membuat PDF: " + e.getMessage());
+        }
+    }
+
+    
 }
