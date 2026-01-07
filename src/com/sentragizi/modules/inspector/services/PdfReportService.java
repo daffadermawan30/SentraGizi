@@ -182,7 +182,7 @@ public class PdfReportService {
 
             // Judul
             Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
-            Paragraph title = new Paragraph("Laporan Rekapitulasi Inspeksi Bahan Baku", titleFont);
+            Paragraph title = new Paragraph("Laporan Rekapitulasi Inspeksi Bahan Baku\n\n", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
 
