@@ -3,143 +3,219 @@ package com.sentragizi.modules.admin.ui;
 import com.sentragizi.modules.admin.ui.panels.PanelInputMenu;
 import com.sentragizi.modules.admin.ui.panels.PanelInputVendor;
 import com.sentragizi.modules.admin.ui.panels.PanelAdminHistory;
+import com.sentragizi.modules.admin.ui.panels.PanelInputKitchen;
+import com.sentragizi.modules.admin.ui.panels.PanelInputTarget;
 import com.sentragizi.modules.auth.ui.LoginFrame;
 import com.sentragizi.shared.utils.SessionManager;
+import com.sentragizi.shared.models.User;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AdminMainFrame extends JFrame {
 
-    private JPanel pnlContent;  // Panel Tengah (Konten Berubah-ubah)
-    private CardLayout cards;   // Pengatur Navigasi Halaman
+    private JPanel pnlContent;      // Container untuk CardLayout
+    private CardLayout cards;       // Manager Navigasi
+    private JLabel lblPageTitle;    // Judul di Header Atas
+    private JLabel lblUserLogin;    // Info User di Header
 
-    // Warna Tema Dashboard
-    private final Color SIDEBAR_COLOR = new Color(44, 62, 80);    // Dark Blue
-    private final Color ACTIVE_BTN_COLOR = new Color(52, 152, 219); // Blue Highlight
-    private final Color HOVER_BTN_COLOR = new Color(52, 73, 94);    // Hover Effect
-    private final Color TEXT_COLOR = Color.WHITE;
+    // --- Modern Color Palette (Flat UI) ---
+    private final Color SIDEBAR_BG = new Color(33, 47, 61);       // Dark Blue-Black
+    private final Color HEADER_BG = new Color(255, 255, 255);     // White
+    private final Color CONTENT_BG = new Color(245, 247, 250);    // Light Gray
+
+    private final Color BTN_DEFAULT = new Color(33, 47, 61);      // Sama dengan Sidebar
+    private final Color BTN_HOVER = new Color(44, 62, 80);        // Sedikit lebih terang
+    private final Color BTN_ACTIVE = new Color(52, 152, 219);     // Blue Accent
+    private final Color TEXT_COLOR = new Color(236, 240, 241);    // Off-White
+
+    // Menyimpan referensi tombol untuk manajemen state (Active/Inactive)
+    private Map<String, SidebarButton> menuButtons = new HashMap<>();
+    private String currentCard = "";
 
     public AdminMainFrame() {
         // 1. Setup Frame Utama
         setTitle("Admin Dashboard - SentraGizi");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1100, 700); // Ukuran lebih lega
+        setSize(1280, 720); // Resolusi HD 720p standar
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // 2. Setup Sidebar (Kiri)
+        // 2. Setup Components
         initSidebar();
-
-        // 3. Setup Content (Tengah)
-        initContent();
+        initMainContentArea();
     }
 
+    // ==========================================
+    // BAGIAN 1: SIDEBAR (KIRI)
+    // ==========================================
     private void initSidebar() {
         JPanel pnlSidebar = new JPanel(new BorderLayout());
-        pnlSidebar.setBackground(SIDEBAR_COLOR);
-        pnlSidebar.setPreferredSize(new Dimension(240, 0)); // Lebar Sidebar
+        pnlSidebar.setBackground(SIDEBAR_BG);
+        pnlSidebar.setPreferredSize(new Dimension(260, 0)); // Lebar Sidebar
 
-        // --- A. Header Sidebar (Logo/Judul) ---
-        JPanel pnlHeader = new JPanel();
-        pnlHeader.setBackground(SIDEBAR_COLOR);
-        pnlHeader.setBorder(new EmptyBorder(30, 10, 30, 10));
+        // --- A. Header Sidebar (Brand) ---
+        JPanel pnlBrand = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 25));
+        pnlBrand.setBackground(SIDEBAR_BG);
         
-        JLabel lblLogo = new JLabel("SENTRAGIZI");
-        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblLogo.setForeground(TEXT_COLOR);
+        JLabel lblLogo = new JLabel("<html>SENTRA<font color='#3498db'>GIZI</font></html>");
+        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        lblLogo.setForeground(Color.WHITE);
         
-        JLabel lblRole = new JLabel("Administrator Panel");
-        lblRole.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblRole.setForeground(new Color(189, 195, 199)); // Abu muda
+        pnlBrand.add(lblLogo);
+        pnlSidebar.add(pnlBrand, BorderLayout.NORTH);
 
-        pnlHeader.setLayout(new GridLayout(2, 1));
-        pnlHeader.add(lblLogo);
-        pnlHeader.add(lblRole);
-        
-        pnlSidebar.add(pnlHeader, BorderLayout.NORTH);
-
-        // --- B. Menu Buttons (Tengah) ---
+        // --- B. Menu List (Tengah) ---
         JPanel pnlMenu = new JPanel();
-        pnlMenu.setLayout(new GridLayout(5, 1, 0, 5)); // Grid vertikal dengan jarak 5px
-        pnlMenu.setBackground(SIDEBAR_COLOR);
-        pnlMenu.setBorder(new EmptyBorder(10, 10, 10, 10));
+        pnlMenu.setLayout(new BoxLayout(pnlMenu, BoxLayout.Y_AXIS)); // Stack vertikal
+        pnlMenu.setBackground(SIDEBAR_BG);
+        pnlMenu.setBorder(new EmptyBorder(10, 0, 10, 0));
 
-        // Tambahkan Tombol Menu Menggunakan Helper Method
-        pnlMenu.add(createMenuButton("🍽  Kelola Menu", "cardMenu"));
-        pnlMenu.add(createMenuButton("🏢  Data Vendor", "cardVendor"));
-        pnlMenu.add(createMenuButton("📊  Monitoring & Laporan", "cardHistory"));
+        // Tambahkan tombol-tombol menu
+        // Format: Icon Unicode + Teks
+        addMenuButton(pnlMenu, "🍽   Kelola Menu", "cardMenu");
+        addMenuButton(pnlMenu, "🏢   Data Vendor", "cardVendor");
+        addMenuButton(pnlMenu, "🍳   Lokasi Dapur", "cardKitchen");
+        addMenuButton(pnlMenu, "🏫   Tujuan Distribusi", "cardTarget");
         
-        // Spacer kosong agar tombol tidak terlalu renggang
-        pnlMenu.add(new JLabel()); 
+        // Spacer / Separator
+        pnlMenu.add(Box.createVerticalStrut(20));
+        JLabel lblReport = new JLabel("   LAPORAN & AUDIT");
+        lblReport.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lblReport.setForeground(new Color(149, 165, 166));
+        lblReport.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlMenu.add(lblReport);
+        pnlMenu.add(Box.createVerticalStrut(10));
         
-        pnlSidebar.add(pnlMenu, BorderLayout.CENTER);
+        addMenuButton(pnlMenu, "📊   Monitoring Inspeksi", "cardHistory");
 
-        // --- C. Footer Sidebar (Logout) ---
-        JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        pnlFooter.setBackground(SIDEBAR_COLOR);
-        pnlFooter.setBorder(new EmptyBorder(20, 10, 20, 10));
+        // Wrapper agar menu start dari atas
+        JPanel pnlMenuWrapper = new JPanel(new BorderLayout());
+        pnlMenuWrapper.setBackground(SIDEBAR_BG);
+        pnlMenuWrapper.add(pnlMenu, BorderLayout.NORTH);
+        
+        pnlSidebar.add(pnlMenuWrapper, BorderLayout.CENTER);
+
+        // --- C. Footer (Logout) ---
+        JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        pnlFooter.setBackground(new Color(28, 40, 51)); // Lebih gelap dikit
+        pnlFooter.setBorder(new EmptyBorder(15, 20, 15, 20));
 
         JButton btnLogout = new JButton("Keluar / Logout");
-        btnLogout.setPreferredSize(new Dimension(200, 40));
-        btnLogout.setBackground(new Color(231, 76, 60)); // Merah
-        btnLogout.setForeground(Color.WHITE);
-        btnLogout.setFocusPainted(false);
         btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnLogout.setBorderPainted(false);
+        btnLogout.setForeground(new Color(231, 76, 60)); // Merah text
+        btnLogout.setBackground(null);
+        btnLogout.setBorder(null);
+        btnLogout.setFocusPainted(false);
+        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLogout.setContentAreaFilled(false);
         btnLogout.addActionListener(e -> actionLogout());
 
         pnlFooter.add(btnLogout);
         pnlSidebar.add(pnlFooter, BorderLayout.SOUTH);
 
-        // Pasang Sidebar ke Frame
         add(pnlSidebar, BorderLayout.WEST);
     }
 
-    private void initContent() {
-        cards = new CardLayout();
-        pnlContent = new JPanel(cards);
-        pnlContent.setBackground(Color.WHITE);
-
-        // --- PENTING: MENDAFTARKAN SEMUA PANEL ---
-        pnlContent.add(new PanelInputMenu(), "cardMenu");
-        pnlContent.add(new PanelInputVendor(), "cardVendor");
-        pnlContent.add(new PanelAdminHistory(), "cardHistory"); // Panel Laporan Baru
-
-        add(pnlContent, BorderLayout.CENTER);
+    // Helper untuk menambahkan tombol ke panel menu
+    private void addMenuButton(JPanel panel, String text, String cardName) {
+        SidebarButton btn = new SidebarButton(text, cardName);
+        panel.add(btn);
+        menuButtons.put(cardName, btn); // Simpan referensi untuk highlight nanti
     }
 
-    // --- Helper Method untuk Membuat Tombol Sidebar yang Seragam ---
-    private JButton createMenuButton(String text, String cardName) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btn.setForeground(TEXT_COLOR);
-        btn.setBackground(SIDEBAR_COLOR);
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setHorizontalAlignment(SwingConstants.LEFT);
-        btn.setBorder(new EmptyBorder(10, 15, 10, 10)); // Padding teks
+    // ==========================================
+    // BAGIAN 2: MAIN CONTENT (TENGAH & ATAS)
+    // ==========================================
+    private void initMainContentArea() {
+        JPanel pnlRight = new JPanel(new BorderLayout());
+        pnlRight.setBackground(CONTENT_BG);
+
+        // --- A. Top Header Bar ---
+        JPanel pnlHeader = new JPanel(new BorderLayout());
+        pnlHeader.setBackground(HEADER_BG);
+        pnlHeader.setPreferredSize(new Dimension(0, 60));
+        pnlHeader.setBorder(new MatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
+
+        // Judul Halaman (Kiri)
+        lblPageTitle = new JLabel("Dashboard Overview");
+        lblPageTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblPageTitle.setForeground(new Color(50, 50, 50));
+        lblPageTitle.setBorder(new EmptyBorder(0, 25, 0, 0));
+        pnlHeader.add(lblPageTitle, BorderLayout.WEST);
+
+        // Info User (Kanan)
+        User currentUser = SessionManager.getCurrentUser();
+        String userName = (currentUser != null) ? currentUser.getFullname() : "Administrator";
         
-        // Aksi saat diklik
-        btn.addActionListener(e -> {
-            cards.show(pnlContent, cardName);
-        });
+        lblUserLogin = new JLabel("<html>Halo, <b>" + userName + "</b> <span style='color:gray; font-size:10px'> (Admin)</span></html>");
+        lblUserLogin.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblUserLogin.setBorder(new EmptyBorder(0, 0, 0, 25));
+        lblUserLogin.setHorizontalAlignment(SwingConstants.RIGHT);
+        
+        // Icon User sederhana (Circle)
+        JLabel lblAvatar = new JLabel("👤 ");
+        lblAvatar.setFont(new Font("Segoe UI", Font.PLAIN, 20));
+        
+        JPanel pnlUser = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 15));
+        pnlUser.setOpaque(false);
+        pnlUser.add(lblAvatar);
+        pnlUser.add(lblUserLogin);
+        
+        pnlHeader.add(pnlUser, BorderLayout.EAST);
+        pnlRight.add(pnlHeader, BorderLayout.NORTH);
 
-        // Efek Hover (Opsional, agar terlihat interaktif)
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(HOVER_BTN_COLOR);
-                btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(SIDEBAR_COLOR);
-            }
-        });
+        // --- B. Content Card Layout ---
+        cards = new CardLayout();
+        pnlContent = new JPanel(cards);
+        pnlContent.setBackground(CONTENT_BG);
 
-        return btn;
+        // Register Panels
+        pnlContent.add(new PanelInputMenu(), "cardMenu");
+        pnlContent.add(new PanelInputVendor(), "cardVendor");
+        pnlContent.add(new PanelInputKitchen(), "cardKitchen");
+        pnlContent.add(new PanelInputTarget(), "cardTarget");
+        pnlContent.add(new PanelAdminHistory(), "cardHistory");
+
+        pnlRight.add(pnlContent, BorderLayout.CENTER);
+        add(pnlRight, BorderLayout.CENTER);
+
+        // Set Default Page
+        switchPage("cardMenu"); 
+    }
+
+    // ==========================================
+    // LOGIC NAVIGASI & STATE
+    // ==========================================
+    private void switchPage(String cardName) {
+        if (currentCard.equals(cardName)) return;
+
+        // 1. Ganti Halaman
+        cards.show(pnlContent, cardName);
+        currentCard = cardName;
+
+        // 2. Update Judul Header sesuai tombol
+        if (menuButtons.containsKey(cardName)) {
+            String rawText = menuButtons.get(cardName).getText();
+            // Bersihkan icon unicode untuk judul
+            String cleanTitle = rawText.replaceAll("[^a-zA-Z0-9 ]", "").trim();
+            lblPageTitle.setText(cleanTitle);
+        }
+
+        // 3. Update Visual Tombol (Highlight yang aktif)
+        for (Map.Entry<String, SidebarButton> entry : menuButtons.entrySet()) {
+            if (entry.getKey().equals(cardName)) {
+                entry.getValue().setActive(true);
+            } else {
+                entry.getValue().setActive(false);
+            }
+        }
     }
 
     private void actionLogout() {
@@ -151,17 +227,92 @@ public class AdminMainFrame extends JFrame {
         
         if (confirm == JOptionPane.YES_OPTION) {
             SessionManager.logout();
-            this.dispose(); // Tutup window admin
-            new LoginFrame().setVisible(true); // Kembali ke login
+            this.dispose();
+            new LoginFrame().setVisible(true);
+        }
+    }
+
+    // ==========================================
+    // INNER CLASS: CUSTOM SIDEBAR BUTTON
+    // ==========================================
+    private class SidebarButton extends JButton {
+        private String targetCard;
+        private boolean isActive = false;
+
+        public SidebarButton(String text, String cardName) {
+            super(text);
+            this.targetCard = cardName;
+            
+            // Basic Style
+            setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            setForeground(new Color(189, 195, 199)); // Gray Text
+            setBackground(SIDEBAR_BG);
+            
+            // Layout Settings
+            setHorizontalAlignment(SwingConstants.LEFT);
+            setBorder(new EmptyBorder(12, 25, 12, 10)); // Padding dalam
+            setFocusPainted(false);
+            setBorderPainted(false);
+            setContentAreaFilled(false); // Kita gambar manual di paintComponent
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+            
+            // Size
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+            setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            // Action
+            addActionListener(e -> switchPage(targetCard));
+
+            // Hover Effect
+            addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) {
+                    if (!isActive) setBackground(BTN_HOVER);
+                }
+                public void mouseExited(MouseEvent e) {
+                    if (!isActive) setBackground(SIDEBAR_BG);
+                }
+            });
+        }
+
+        public void setActive(boolean active) {
+            this.isActive = active;
+            if (active) {
+                setForeground(Color.WHITE);
+                setFont(new Font("Segoe UI", Font.BOLD, 14));
+                setBackground(new Color(44, 62, 80)); // Background Active
+            } else {
+                setForeground(new Color(189, 195, 199));
+                setFont(new Font("Segoe UI", Font.PLAIN, 14));
+                setBackground(SIDEBAR_BG);
+            }
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Gambar Background
+            if (isActive || getModel().isRollover()) {
+                g2.setColor(getBackground());
+                g2.fillRect(0, 0, getWidth(), getHeight());
+            }
+
+            // Gambar Indikator Garis Kiri (Hanya jika aktif)
+            if (isActive) {
+                g2.setColor(BTN_ACTIVE);
+                g2.fillRect(0, 0, 5, getHeight()); // Garis biru tebal 5px
+            }
+
+            super.paintComponent(g);
         }
     }
 
     public static void main(String[] args) {
-        // Gunakan Look and Feel bawaan sistem agar lebih halus
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ignored) {}
-
         SwingUtilities.invokeLater(() -> new AdminMainFrame().setVisible(true));
     }
 }

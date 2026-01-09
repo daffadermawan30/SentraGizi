@@ -8,32 +8,38 @@ import javax.swing.table.DefaultTableModel;
 public class InspectionRepository {
 
     // 1. Simpan Header Inspeksi (Start Batch)
-    public long insertInspectionHeader(String uuid, int menuId, int inspectorId) {
-        String sql = "INSERT INTO inspections (batch_uuid, menu_id, inspector_id, workflow_status) VALUES (?, ?, ?, 'IN_PROGRESS')";
+    public long insertInspectionHeader(String batchUuid, int menuId, int userId, 
+                                   int productionKitchenId, int distributionTargetId) {
+    String sql = "INSERT INTO inspections (batch_uuid, menu_id, inspector_id, " +
+                 "production_kitchen_id, distribution_target_id, workflow_status) " +
+                 "VALUES (?, ?, ?, ?, ?, 'IN_PROGRESS')";
+    
+    try (Connection conn = DatabaseConnection.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
         
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
-            ps.setString(1, uuid);
-            ps.setInt(2, menuId);
-            ps.setInt(3, inspectorId);
-            
-            int affectedRows = ps.executeUpdate();
-
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        return generatedKeys.getLong(1); // Kembalikan ID Baru (Primary Key)
-                    }
-                }
+        pstmt.setString(1, batchUuid);
+        pstmt.setInt(2, menuId);
+        pstmt.setInt(3, userId);
+        pstmt.setInt(4, productionKitchenId);
+        pstmt.setInt(5, distributionTargetId);
+        
+        int affected = pstmt.executeUpdate();
+        
+        if (affected > 0) {
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getLong(1);
             }
-        } catch (Exception e) { e.printStackTrace(); }
-        return -1; // Gagal
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    
+    return -1;
+}
 
     // 2. Simpan Detail Inspeksi (Per Item)
     public boolean insertInspectionDetail(long inspectionId, InspectionDetail detail) {
-        // Tambahkan kolom follow_up_note di SQL
         String sql = "INSERT INTO inspection_details (inspection_id, component_id, vendor_id, photo_path, bau_ok, rasa_ok, tekstur_ok, status_ai, status_final, follow_up_note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DatabaseConnection.getConnection();
@@ -48,8 +54,6 @@ public class InspectionRepository {
             ps.setBoolean(7, detail.isTeksturOk());
             ps.setString(8, detail.getStatusAi()); 
             ps.setString(9, detail.getStatusFinal());
-            
-            // --- INPUT CATATAN ---
             ps.setString(10, detail.getFollowUpNote()); 
             
             return ps.executeUpdate() > 0;
@@ -69,26 +73,10 @@ public class InspectionRepository {
             ps.executeUpdate();
         } catch (Exception e) { e.printStackTrace(); }
     }
+
     // 4. AMBIL DETAIL INSPEKSI (Untuk Dialog History)
     public java.util.List<InspectionDetail> getDetailsByBatch(String uuid) {
         java.util.List<InspectionDetail> list = new java.util.ArrayList<>();
-        
-        // Kita perlu JOIN ke tabel menus/components agar dapat nama bahannya
-        // Asumsi: component_id mungkin 0 (sesuai kode PanelStage1 tadi), 
-        // jadi kita ambil nama bahan lewat logika lain atau simpan nama bahan di detail (opsional).
-        // Untuk sekarang, kita ambil data murni dari inspection_details dan join Vendor.
-        
-        String sql = "SELECT d.*, v.name as vendor_name, m.raw_material_name " +
-                     "FROM inspection_details d " +
-                     "JOIN inspections i ON d.inspection_id = i.id " +
-                     "LEFT JOIN vendors v ON d.vendor_id = v.id " +
-                     "LEFT JOIN menu_components m ON d.component_id = m.id " + // Jika component_id diisi
-                     "WHERE i.batch_uuid = ?";
-                     
-        // CATATAN: Karena di PanelStage1 tadi kita set component_id = 0, 
-        // Anda mungkin perlu menyimpan "nama_bahan" langsung di tabel detail 
-        // atau memperbaiki PanelStage1 agar mencari ID komponen yang benar.
-        // TAPI, untuk solusi cepat agar tidak error, kita pakai query simpel dulu:
         
         String sqlSimple = "SELECT d.*, v.name as vendor_name " +
                            "FROM inspection_details d " +
@@ -104,29 +92,15 @@ public class InspectionRepository {
             
             while(rs.next()) {
                 InspectionDetail d = new InspectionDetail();
-                // Kita perlu sedikit modifikasi Model InspectionDetail atau akal-akalan sedikit
-                // karena model aslinya tidak punya field "vendorName"
-                
                 d.setVendorId(rs.getInt("vendor_id")); 
-                // Kita pinjam field 'photoPath' untuk menyimpan Nama Vendor sementara (Hack UI)
-                // Atau field lain yang string. Tapi sebaiknya buat DTO baru.
-                // Agar tidak rumit, kita simpan path foto asli di photoPath, 
-                // nanti di UI kita ambil Vendor ID dan cari namanya (atau query join diatas).
-                
-                // Mari kita gunakan cara bersih: Buat kelas DTO (Data Transfer Object) di dalam method UI saja
-                // Tapi karena return type method ini List<InspectionDetail>, kita isi data standar:
-                
-                // d.setComponentId(...); // Masih 0
-                // d.setVendorId(rs.getInt("vendor_id"));
-                // ... isi setter lainnya
             }
         } catch (Exception e) { e.printStackTrace(); }
         return list;
     }
     
-    // --- ALTERNATIF YANG LEBIH BAIK: RETRIEVE UNTUK TABEL UI ---
-     public DefaultTableModel getDetailTableForView(String uuid) {
-        // KOLOM HEADER (Bau, Rasa, Tekstur Dipisah)
+    // --- METHOD PENTING: RETRIEVE DATA UNTUK TABEL UI ---
+    public DefaultTableModel getDetailTableForView(String uuid) {
+        // KOLOM HEADER - TAMBAHKAN KOLOM CATATAN (INDEX 9)
         String[] columns = {
             "Bahan Baku",       // 0
             "Menu Masakan",     // 1
@@ -136,24 +110,27 @@ public class InspectionRepository {
             "Tekstur",          // 5
             "Hasil AI",         // 6
             "Status Akhir",     // 7
-            "Foto Path"         // 8 (Hidden)
+            "Foto Path",        // 8
+            "Catatan"           // 9 *** INI YANG PENTING! ***
         };
 
         DefaultTableModel model = new DefaultTableModel(columns, 0);
         
+        // TAMBAHKAN follow_up_note DI SELECT QUERY
         String sql = 
             "SELECT " +
             "  mc.raw_material_name, " +
             "  mc.component_name, " +
-            "  v.name as vendor_name, " +
-            "  d.bau_ok, d.rasa_ok, d.tekstur_ok, " + // Ambil mentah boolean
+            "  COALESCE(v.name, '-') as vendor_name, " +
+            "  d.bau_ok, d.rasa_ok, d.tekstur_ok, " +
             "  d.status_ai, " +
             "  d.status_final, " +
-            "  d.photo_path " +
+            "  d.photo_path, " +
+            "  COALESCE(d.follow_up_note, '') as catatan " + // *** AMBIL CATATAN! ***
             "FROM inspection_details d " +
             "JOIN inspections i ON d.inspection_id = i.id " +
             "JOIN menu_components mc ON d.component_id = mc.id " +
-            "JOIN vendors v ON d.vendor_id = v.id " +
+            "LEFT JOIN vendors v ON d.vendor_id = v.id " +
             "WHERE i.batch_uuid = ? " +
             "ORDER BY d.id ASC";
             
@@ -164,10 +141,10 @@ public class InspectionRepository {
             ResultSet rs = ps.executeQuery();
             
             while(rs.next()) {
-                // Konversi boolean ke String ("OK" / "X") agar lebih enak dilihat
-                String bau = rs.getBoolean("bau_ok") ? "OK" : "X";
-                String rasa = rs.getBoolean("rasa_ok") ? "OK" : "X";
-                String tekstur = rs.getBoolean("tekstur_ok") ? "OK" : "X";
+                // Konversi boolean ke String
+                String bau = rs.getBoolean("bau_ok") ? "✓" : "✗";
+                String rasa = rs.getBoolean("rasa_ok") ? "✓" : "✗";
+                String tekstur = rs.getBoolean("tekstur_ok") ? "✓" : "✗";
 
                 model.addRow(new Object[]{
                     rs.getString("raw_material_name"), // 0
@@ -178,23 +155,28 @@ public class InspectionRepository {
                     tekstur,                           // 5
                     rs.getString("status_ai"),         // 6
                     rs.getString("status_final"),      // 7
-                    rs.getString("photo_path")         // 8
+                    rs.getString("photo_path"),        // 8
+                    rs.getString("catatan")            // 9 *** TAMBAHKAN INI! ***
                 });
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { 
+            e.printStackTrace();
+            System.err.println("ERROR saat mengambil data: " + e.getMessage());
+        }
         return model;
     }
         
-        // 5. AMBIL DATA LENGKAP UNTUK LAPORAN PDF
-    // Mengembalikan ResultSet agar fleksibel dibaca oleh PDF Generator
+    // 5. AMBIL DATA LENGKAP UNTUK LAPORAN PDF
     public ResultSet getReportData(String uuid) {
         String sql = "SELECT " +
                      "i.batch_uuid, i.created_at, i.workflow_status, " +
                      "m.name as menu_name, " +
                      "u.fullname as inspector_name, " +
                      "mc.raw_material_name, " +
+                     "mc.component_name, " +
                      "v.name as vendor_name, " +
-                     "d.bau_ok, d.rasa_ok, d.tekstur_ok, d.status_ai, d.status_final " +
+                     "d.bau_ok, d.rasa_ok, d.tekstur_ok, d.status_ai, d.status_final, " +
+                     "d.follow_up_note " + // Tambahkan juga untuk PDF
                      "FROM inspection_details d " +
                      "JOIN inspections i ON d.inspection_id = i.id " +
                      "LEFT JOIN menus m ON i.menu_id = m.id " +
@@ -208,7 +190,6 @@ public class InspectionRepository {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, uuid);
             return ps.executeQuery(); 
-            // Note: ResultSet ini harus ditutup di kelas pemanggil (PdfService)
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -216,8 +197,6 @@ public class InspectionRepository {
     }
     
     public ResultSet getReportByDateRange(String startDate, String endDate) {
-        // Query ini menggabungkan semua inspeksi dalam rentang waktu
-        // dan menghitung berapa item PASS dan FAIL dalam setiap inspeksi
         String sql = "SELECT i.batch_uuid, i.created_at, m.name as menu_name, u.fullname as inspector_name, " +
                      "i.workflow_status, " +
                      "(SELECT COUNT(*) FROM inspection_details d WHERE d.inspection_id = i.id AND d.status_final = 'PASS') as total_pass, " +

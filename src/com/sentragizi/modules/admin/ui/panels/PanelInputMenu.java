@@ -251,7 +251,7 @@ public class PanelInputMenu extends JPanel {
         JScrollPane scrollPane = new JScrollPane(tblComponents);
         scrollPane.setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(new Color(200, 200, 200)), 
-            " Daftar Komponen (Klik 2x untuk Edit)",
+            " --- ",
             TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION,
             new Font("Segoe UI", Font.BOLD, 12)
         ));
@@ -273,9 +273,9 @@ public class PanelInputMenu extends JPanel {
         JPanel pnlGlobalActions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnlGlobalActions.setOpaque(false);
 
-        btnList = createButton("📂 Lihat Daftar", new Color(149, 165, 166));
-        btnReset = createButton("🔄 Reset", new Color(231, 76, 60));
-        btnSave = createButton("💾 Simpan Menu", new Color(46, 204, 113));
+        btnList = createButton("Lihat Daftar", new Color(149, 165, 166));
+        btnReset = createButton("Reset", new Color(231, 76, 60));
+        btnSave = createButton("Simpan Menu", new Color(46, 204, 113));
         btnSave.setPreferredSize(new Dimension(150, 40));
 
         btnList.addActionListener(this::actionShowList);
@@ -326,7 +326,7 @@ public class PanelInputMenu extends JPanel {
         txtMenuName.setText("");
         resetInputComponents();
         tableModel.setRowCount(0);
-        btnSave.setText("💾 Simpan Menu Baru");
+        btnSave.setText("Simpan Menu Baru");
         btnSave.setBackground(new Color(46, 204, 113)); 
     }
 
