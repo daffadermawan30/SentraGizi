@@ -76,6 +76,14 @@ public class AdminMainFrame extends JFrame {
         pnlMenu.setLayout(new BoxLayout(pnlMenu, BoxLayout.Y_AXIS)); // Stack vertikal
         pnlMenu.setBackground(SIDEBAR_BG);
         pnlMenu.setBorder(new EmptyBorder(10, 0, 10, 0));
+        
+        pnlMenu.add(Box.createVerticalStrut(20));
+        JLabel lblReports = new JLabel("   MENU");
+        lblReports.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lblReports.setForeground(new Color(149, 165, 166));
+        lblReports.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlMenu.add(lblReports);
+        pnlMenu.add(Box.createVerticalStrut(10));
 
         // Tambahkan tombol-tombol menu
         // Format: Icon Unicode + Teks

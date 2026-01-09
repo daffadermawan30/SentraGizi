@@ -2,10 +2,18 @@ package com.sentragizi.modules.admin.ui.panels;
 
 import com.sentragizi.modules.admin.repositories.ProductionKitchenRepository;
 import com.sentragizi.shared.models.ProductionKitchen;
+
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.MatteBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class PanelInputKitchen extends JPanel {
@@ -19,6 +27,15 @@ public class PanelInputKitchen extends JPanel {
     private ProductionKitchenRepository repo = new ProductionKitchenRepository();
     private int selectedId = 0;
 
+    // --- Warna & Font Modern ---
+    private final Color PRIMARY_COLOR = new Color(52, 152, 219);
+    private final Color SUCCESS_COLOR = new Color(46, 204, 113);
+    private final Color DANGER_COLOR = new Color(231, 76, 60);
+    private final Color TEXT_DARK = new Color(44, 62, 80);
+    private final Color BG_COLOR = new Color(245, 247, 250);
+    private final Font FONT_HEADER = new Font("Segoe UI", Font.BOLD, 14);
+    private final Font FONT_NORMAL = new Font("Segoe UI", Font.PLAIN, 13);
+
     public PanelInputKitchen() {
         initUI();
         refreshTable();
@@ -26,52 +43,66 @@ public class PanelInputKitchen extends JPanel {
 
     private void initUI() {
         setLayout(new BorderLayout(20, 20));
-        setBackground(new Color(245, 247, 250));
-        setBorder(new EmptyBorder(20, 20, 20, 20));
+        setBackground(BG_COLOR);
+        setBorder(new EmptyBorder(25, 25, 25, 25));
 
-        // Header
+        // --- 1. HEADER TITLE ---
         JLabel lblTitle = new JLabel("Manajemen Lokasi Dapur Produksi");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setForeground(new Color(44, 62, 80));
+        lblTitle.setForeground(TEXT_DARK);
         add(lblTitle, BorderLayout.NORTH);
 
-        // Content
+        // --- 2. CONTENT WRAPPER ---
         JPanel pnlContent = new JPanel(new BorderLayout(20, 0));
         pnlContent.setOpaque(false);
 
-        // FORM (Kiri)
+        // --- A. FORM PANEL (KIRI) ---
         JPanel pnlForm = new JPanel(new GridBagLayout());
         pnlForm.setBackground(Color.WHITE);
-        pnlForm.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
-        pnlForm.setPreferredSize(new Dimension(320, 0));
+        pnlForm.setBorder(new CompoundBorder(
+            new LineBorder(new Color(220, 220, 220), 1, true),
+            new EmptyBorder(20, 20, 20, 20)
+        ));
+        pnlForm.setPreferredSize(new Dimension(350, 0)); // Lebar Form Fixed
         
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.insets = new Insets(0, 0, 15, 0);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx = 0; gbc.weightx = 1.0;
 
-        // Input Fields
-        gbc.gridy = 0; pnlForm.add(new JLabel("Nama Dapur:"), gbc);
-        gbc.gridy = 1; txtName = new JTextField(); pnlForm.add(txtName, gbc);
+        // Label & Input Nama
+        gbc.gridy = 0; pnlForm.add(createLabel("Nama Dapur:"), gbc);
+        gbc.gridy = 1; 
+        txtName = createStyledTextField();
+        pnlForm.add(txtName, gbc);
         
-        gbc.gridy = 2; pnlForm.add(new JLabel("Alamat Lengkap:"), gbc);
+        // Label & Input Alamat
+        gbc.gridy = 2; pnlForm.add(createLabel("Alamat Lengkap:"), gbc);
         gbc.gridy = 3; 
-        txtAddress = new JTextArea(3, 20);
-        txtAddress.setLineWrap(true);
-        pnlForm.add(new JScrollPane(txtAddress), gbc);
+        txtAddress = createStyledTextArea();
+        JScrollPane scrollAddr = new JScrollPane(txtAddress);
+        scrollAddr.setBorder(new LineBorder(new Color(200, 200, 200)));
+        pnlForm.add(scrollAddr, gbc);
         
+        // Checkbox Status
         gbc.gridy = 4;
-        chkActive = new JCheckBox("Status Aktif?");
+        chkActive = new JCheckBox("Status Aktif / Beroperasi");
+        chkActive.setFont(FONT_NORMAL);
+        chkActive.setForeground(TEXT_DARK);
         chkActive.setSelected(true);
         chkActive.setBackground(Color.WHITE);
+        chkActive.setFocusPainted(false);
         pnlForm.add(chkActive, gbc);
 
         // Buttons
         gbc.gridy = 5;
-        JPanel pnlBtn = new JPanel(new GridLayout(1, 3, 5, 0));
-        btnDelete = new JButton("Hapus"); btnDelete.setBackground(new Color(231, 76, 60)); btnDelete.setForeground(Color.WHITE);
-        btnReset = new JButton("Reset"); btnReset.setBackground(new Color(149, 165, 166)); btnReset.setForeground(Color.WHITE);
-        btnSave = new JButton("Simpan"); btnSave.setBackground(new Color(46, 204, 113)); btnSave.setForeground(Color.WHITE);
+        gbc.insets = new Insets(20, 0, 0, 0); // Jarak lebih besar ke tombol
+        JPanel pnlBtn = new JPanel(new GridLayout(1, 3, 10, 0)); // Spasi antar tombol 10px
+        pnlBtn.setBackground(Color.WHITE);
+        
+        btnDelete = createButton("Hapus", DANGER_COLOR);
+        btnReset = createButton("Reset", new Color(149, 165, 166));
+        btnSave = createButton("Simpan", SUCCESS_COLOR);
         
         btnDelete.addActionListener(e -> actionDelete());
         btnReset.addActionListener(e -> resetForm());
@@ -80,24 +111,73 @@ public class PanelInputKitchen extends JPanel {
         pnlBtn.add(btnDelete); pnlBtn.add(btnReset); pnlBtn.add(btnSave);
         pnlForm.add(pnlBtn, gbc);
         
-        // Spacer
+        // Spacer (Push content up)
         gbc.gridy = 6; gbc.weighty = 1.0; pnlForm.add(new JLabel(), gbc);
 
-        // TABLE (Kanan)
+        // --- B. TABLE PANEL (KANAN) ---
         model = new DefaultTableModel(new String[]{"ID", "Nama Dapur", "Alamat", "Status"}, 0) {
             public boolean isCellEditable(int row, int col) { return false; }
         };
-        table = new JTable(model);
-        table.setRowHeight(30);
+        table = new JTable(model) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    // Selang-seling warna baris
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(249, 250, 251));
+                }
+                return c;
+            }
+        };
+        
+        // Style Table Header
+        JTableHeader header = table.getTableHeader();
+        header.setFont(FONT_HEADER);
+        header.setBackground(Color.WHITE);
+        header.setForeground(new Color(100, 100, 100));
+        header.setPreferredSize(new Dimension(0, 45));
+        header.setBorder(new MatteBorder(0, 0, 2, 0, new Color(230, 230, 230)));
+
+        // Style Table Body
+        table.setRowHeight(40);
+        table.setFont(FONT_NORMAL);
+        table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(true);
+        table.setGridColor(new Color(230, 230, 230));
+        table.setSelectionBackground(new Color(232, 244, 252));
+        table.setSelectionForeground(TEXT_DARK);
+        
+        // Hide ID Column
         table.getColumnModel().getColumn(0).setMinWidth(0);
         table.getColumnModel().getColumn(0).setMaxWidth(0);
+        table.getColumnModel().getColumn(0).setWidth(0);
+
+        // Custom Renderer untuk Status (Warna Hijau/Merah)
+        table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel c = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                String status = (String) value;
+                c.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                c.setHorizontalAlignment(CENTER);
+                
+                if ("Aktif".equals(status)) {
+                    c.setForeground(new Color(39, 174, 96)); 
+                    c.setText("● AKTIF");
+                } else {
+                    c.setForeground(new Color(192, 57, 43)); 
+                    c.setText("● NON-AKTIF");
+                }
+                return c;
+            }
+        });
         
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) loadSelection();
         });
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setBorder(BorderFactory.createTitledBorder("Daftar Dapur"));
+        scroll.setBorder(new LineBorder(new Color(220, 220, 220), 1, true));
         scroll.getViewport().setBackground(Color.WHITE);
 
         pnlContent.add(pnlForm, BorderLayout.WEST);
@@ -107,7 +187,54 @@ public class PanelInputKitchen extends JPanel {
         resetForm();
     }
 
-    // --- PERUBAHAN DI SINI ---
+    // --- HELPER UI METHODS ---
+
+    private JLabel createLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setForeground(new Color(100, 100, 100));
+        lbl.setBorder(new EmptyBorder(0, 0, 5, 0));
+        return lbl;
+    }
+
+    private JTextField createStyledTextField() {
+        JTextField txt = new JTextField();
+        txt.setFont(FONT_NORMAL);
+        txt.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(new Color(200, 200, 200)), 
+            new EmptyBorder(8, 10, 8, 10) // Padding text
+        ));
+        return txt;
+    }
+
+    private JTextArea createStyledTextArea() {
+        JTextArea txt = new JTextArea(3, 20);
+        txt.setFont(FONT_NORMAL);
+        txt.setLineWrap(true);
+        txt.setWrapStyleWord(true);
+        txt.setBorder(new EmptyBorder(5, 5, 5, 5));
+        return txt;
+    }
+
+    private JButton createButton(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorder(new EmptyBorder(10, 0, 10, 0));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        // Hover Effect sederhana
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btn.setBackground(bg.darker()); }
+            public void mouseExited(MouseEvent e) { btn.setBackground(bg); }
+        });
+        return btn;
+    }
+
+    // --- LOGIC METHODS (Sama seperti sebelumnya) ---
+
     private void refreshTable() {
         model.setRowCount(0);
         // Menggunakan getAllKitchens() agar Admin melihat SEMUA data (Aktif & Non-Aktif)
@@ -122,7 +249,6 @@ public class PanelInputKitchen extends JPanel {
             });
         }
     }
-    // ------------------------
 
     private void loadSelection() {
         int row = table.getSelectedRow();
@@ -131,11 +257,15 @@ public class PanelInputKitchen extends JPanel {
         txtAddress.setText(model.getValueAt(row, 2).toString());
         
         // Ambil status dari tabel untuk mengisi checkbox
-        String status = model.getValueAt(row, 3).toString();
-        chkActive.setSelected("Aktif".equals(status));
+        String status = model.getValueAt(row, 3).toString(); // Ambil raw text
+        // Karena renderer mengubah text visual, kita cek string aslinya jika ada atau logika renderer
+        // Tapi di tableModel kita simpan String sederhana "Aktif" / "Non-Aktif" (lihat refreshTable)
+        // Jadi aman.
+        boolean isActive = status.contains("Aktif") && !status.contains("NON");
+        chkActive.setSelected(isActive);
         
         btnSave.setText("Update");
-        btnSave.setBackground(new Color(52, 152, 219));
+        btnSave.setBackground(PRIMARY_COLOR);
         btnDelete.setEnabled(true);
     }
 
@@ -146,7 +276,7 @@ public class PanelInputKitchen extends JPanel {
         chkActive.setSelected(true);
         table.clearSelection();
         btnSave.setText("Simpan");
-        btnSave.setBackground(new Color(46, 204, 113));
+        btnSave.setBackground(SUCCESS_COLOR);
         btnDelete.setEnabled(false);
     }
 
