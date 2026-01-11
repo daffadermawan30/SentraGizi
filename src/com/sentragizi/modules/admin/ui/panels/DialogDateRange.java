@@ -19,8 +19,8 @@ public class DialogDateRange extends JDialog {
         JPanel pnlForm = new JPanel(new GridLayout(2, 2, 10, 20));
         pnlForm.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
-        // Default tanggal hari ini
-        String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE); // YYYY-MM-DD
+        
+        String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE); 
 
         pnlForm.add(new JLabel("Dari Tanggal (YYYY-MM-DD):"));
         txtStart = new JFormattedTextField(today);
@@ -32,7 +32,7 @@ public class DialogDateRange extends JDialog {
 
         add(pnlForm, BorderLayout.CENTER);
 
-        // Tombol
+        
         JPanel pnlBtn = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnCancel = new JButton("Batal");
         JButton btnPrint = new JButton("Cetak Rekap");

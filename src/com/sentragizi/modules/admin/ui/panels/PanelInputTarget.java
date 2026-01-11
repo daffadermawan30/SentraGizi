@@ -28,7 +28,7 @@ public class PanelInputTarget extends JPanel {
     private DistributionTargetRepository repo = new DistributionTargetRepository();
     private int selectedId = 0;
 
-    // --- Warna & Font Modern (Konsisten dengan PanelInputKitchen) ---
+    
     private final Color PRIMARY_COLOR = new Color(52, 152, 219);
     private final Color SUCCESS_COLOR = new Color(46, 204, 113);
     private final Color DANGER_COLOR = new Color(231, 76, 60);
@@ -47,52 +47,52 @@ public class PanelInputTarget extends JPanel {
         setBackground(BG_COLOR);
         setBorder(new EmptyBorder(25, 25, 25, 25));
 
-        // --- 1. HEADER TITLE ---
+        
         JLabel lblTitle = new JLabel("Manajemen Tujuan Distribusi");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(TEXT_DARK);
         add(lblTitle, BorderLayout.NORTH);
 
-        // --- 2. CONTENT WRAPPER ---
+        
         JPanel pnlContent = new JPanel(new BorderLayout(20, 0));
         pnlContent.setOpaque(false);
 
-        // --- A. FORM PANEL (KIRI) ---
+        
         JPanel pnlForm = new JPanel(new GridBagLayout());
         pnlForm.setBackground(Color.WHITE);
         pnlForm.setBorder(new CompoundBorder(
             new LineBorder(new Color(220, 220, 220), 1, true),
             new EmptyBorder(20, 20, 20, 20)
         ));
-        pnlForm.setPreferredSize(new Dimension(350, 0)); // Lebar Form Fixed
+        pnlForm.setPreferredSize(new Dimension(350, 0)); 
         
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 15, 0);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx = 0; gbc.weightx = 1.0;
 
-        // Input: Nama Instansi
+        
         gbc.gridy = 0; pnlForm.add(createLabel("Nama Instansi / Sekolah:"), gbc);
         gbc.gridy = 1; 
         txtName = createStyledTextField();
         pnlForm.add(txtName, gbc);
         
-        // Input: Jenis Instansi
+        
         gbc.gridy = 2; pnlForm.add(createLabel("Jenis Instansi:"), gbc);
         gbc.gridy = 3;
         cmbType = new JComboBox<>(new String[]{"SEKOLAH", "PUSKESMAS", "POSYANDU", "LAINNYA"});
         cmbType.setFont(FONT_NORMAL);
         cmbType.setBackground(Color.WHITE);
-        cmbType.setPreferredSize(new Dimension(0, 38)); // Samakan tinggi dengan textfield
+        cmbType.setPreferredSize(new Dimension(0, 38)); 
         pnlForm.add(cmbType, gbc);
 
-        // Input: Lokasi
+        
         gbc.gridy = 4; pnlForm.add(createLabel("Lokasi / Wilayah:"), gbc);
         gbc.gridy = 5; 
         txtLocation = createStyledTextField();
         pnlForm.add(txtLocation, gbc);
         
-        // Checkbox Status
+        
         gbc.gridy = 6;
         chkActive = new JCheckBox("Status Aktif / Menerima Distribusi");
         chkActive.setFont(FONT_NORMAL);
@@ -102,7 +102,7 @@ public class PanelInputTarget extends JPanel {
         chkActive.setFocusPainted(false);
         pnlForm.add(chkActive, gbc);
 
-        // Buttons
+        
         gbc.gridy = 7;
         gbc.insets = new Insets(20, 0, 0, 0); 
         JPanel pnlBtn = new JPanel(new GridLayout(1, 3, 10, 0));
@@ -119,10 +119,10 @@ public class PanelInputTarget extends JPanel {
         pnlBtn.add(btnDelete); pnlBtn.add(btnReset); pnlBtn.add(btnSave);
         pnlForm.add(pnlBtn, gbc);
         
-        // Spacer
+        
         gbc.gridy = 8; gbc.weighty = 1.0; pnlForm.add(new JLabel(), gbc);
 
-        // --- B. TABLE PANEL (KANAN) ---
+        
         model = new DefaultTableModel(new String[]{"ID", "Nama Instansi", "Tipe", "Lokasi", "Status"}, 0) {
             public boolean isCellEditable(int row, int col) { return false; }
         };
@@ -137,7 +137,7 @@ public class PanelInputTarget extends JPanel {
             }
         };
         
-        // Style Table Header
+        
         JTableHeader header = table.getTableHeader();
         header.setFont(FONT_HEADER);
         header.setBackground(Color.WHITE);
@@ -145,7 +145,7 @@ public class PanelInputTarget extends JPanel {
         header.setPreferredSize(new Dimension(0, 45));
         header.setBorder(new MatteBorder(0, 0, 2, 0, new Color(230, 230, 230)));
 
-        // Style Table Body
+        
         table.setRowHeight(40);
         table.setFont(FONT_NORMAL);
         table.setShowVerticalLines(false);
@@ -154,16 +154,16 @@ public class PanelInputTarget extends JPanel {
         table.setSelectionBackground(new Color(232, 244, 252));
         table.setSelectionForeground(TEXT_DARK);
         
-        // Hide ID Column
+        
         table.getColumnModel().getColumn(0).setMinWidth(0);
         table.getColumnModel().getColumn(0).setMaxWidth(0);
         table.getColumnModel().getColumn(0).setWidth(0);
 
-        // Column Widths
-        table.getColumnModel().getColumn(2).setPreferredWidth(100); // Tipe
-        table.getColumnModel().getColumn(4).setPreferredWidth(100); // Status
+        
+        table.getColumnModel().getColumn(2).setPreferredWidth(100); 
+        table.getColumnModel().getColumn(4).setPreferredWidth(100); 
 
-        // Custom Renderer untuk Status
+        
         table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -198,7 +198,7 @@ public class PanelInputTarget extends JPanel {
         resetForm();
     }
 
-    // --- HELPER UI METHODS ---
+    
 
     private JLabel createLabel(String text) {
         JLabel lbl = new JLabel(text);
@@ -234,11 +234,11 @@ public class PanelInputTarget extends JPanel {
         return btn;
     }
 
-    // --- LOGIC METHODS ---
+    
 
     private void refreshTable() {
         model.setRowCount(0);
-        // Menggunakan getAllTargets() agar Admin melihat SEMUA data
+        
         List<DistributionTarget> list = repo.getAllTargets(); 
         
         for (DistributionTarget t : list) {
@@ -259,9 +259,9 @@ public class PanelInputTarget extends JPanel {
         cmbType.setSelectedItem(model.getValueAt(row, 2).toString());
         txtLocation.setText(model.getValueAt(row, 3).toString());
         
-        // Cek status
+        
         String status = model.getValueAt(row, 4).toString();
-        // Logika sederhana: jika text mengandung "AKTIF" dan bukan "NON-AKTIF"
+        
         boolean isActive = status.contains("AKTIF") && !status.contains("NON");
         chkActive.setSelected(isActive);
         

@@ -4,7 +4,7 @@ public class DistributionTarget {
     private int id;
     private String name;
     private String location;
-    private String type; // SEKOLAH, PUSKESMAS, POSYANDU, LAINNYA
+    private String type; 
     private boolean isActive;
 
     public DistributionTarget() {}
@@ -17,7 +17,7 @@ public class DistributionTarget {
         this.isActive = isActive;
     }
 
-    // Getters and Setters
+    
     public int getId() {
         return id;
     }

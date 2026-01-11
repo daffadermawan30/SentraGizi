@@ -3,7 +3,7 @@ package com.sentragizi.shared.models;
 public class Vendor {
     private int id;
     private String name;
-    private String specialty; // "Buah", "Daging"
+    private String specialty; 
 
     public Vendor(int id, String name, String specialty) {
         this.id = id;
@@ -16,7 +16,7 @@ public class Vendor {
     public String getSpecialty() { return specialty; }
 
     @Override
-    public String toString() { // Biar di ComboBox muncul namanya
+    public String toString() { 
         return name + " (" + specialty + ")";
     }
 }

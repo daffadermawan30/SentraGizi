@@ -14,16 +14,16 @@ import java.util.List;
 
 public class PanelInputVendor extends JPanel {
 
-    // --- Komponen UI ---
+    
     private JTextField txtName;
     private JTextArea txtSpec;
     private JTable tblVendor;
     private DefaultTableModel tableModel;
     private JButton btnSimpan, btnHapus, btnReset;
 
-    // --- Data & Logic ---
+    
     private VendorRepository repo = new VendorRepository();
-    private int selectedId = 0; // 0 = Mode Baru, >0 = Mode Edit
+    private int selectedId = 0; 
 
     public PanelInputVendor() {
         initUI();
@@ -32,32 +32,32 @@ public class PanelInputVendor extends JPanel {
         resetForm();
     }
 
-    // ==========================================
-    // 1. SETUP TAMPILAN (UI DESIGN)
-    // ==========================================
+    
+    
+    
     private void initUI() {
         setLayout(new BorderLayout(20, 20));
-        setBackground(new Color(245, 247, 250)); // Background abu muda
-        setBorder(new EmptyBorder(20, 20, 20, 20)); // Margin Luar
+        setBackground(new Color(245, 247, 250)); 
+        setBorder(new EmptyBorder(20, 20, 20, 20)); 
 
-        // --- HEADER ---
+        
         JLabel lblTitle = new JLabel("Manajemen Data Vendor");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(new Color(44, 62, 80));
         add(lblTitle, BorderLayout.NORTH);
 
-        // --- CONTENT WRAPPER (Form Kiri + Tabel Kanan) ---
+        
         JPanel pnlContent = new JPanel(new BorderLayout(20, 0));
         pnlContent.setOpaque(false);
 
-        // A. PANEL FORM (KIRI)
+        
         JPanel pnlForm = new JPanel(new GridBagLayout());
         pnlForm.setBackground(Color.WHITE);
         pnlForm.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(220, 220, 220)),
                 new EmptyBorder(20, 20, 20, 20)
         ));
-        pnlForm.setPreferredSize(new Dimension(320, 0)); // Lebar Form Tetap
+        pnlForm.setPreferredSize(new Dimension(320, 0)); 
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -65,7 +65,7 @@ public class PanelInputVendor extends JPanel {
         gbc.gridx = 0; 
         gbc.weightx = 1.0;
 
-        // Input: Nama Vendor
+        
         gbc.gridy = 0;
         pnlForm.add(new JLabel("Nama Vendor:"), gbc);
         
@@ -75,12 +75,12 @@ public class PanelInputVendor extends JPanel {
         txtName.setPreferredSize(new Dimension(0, 35));
         pnlForm.add(txtName, gbc);
 
-        // Input: Spesialisasi
+        
         gbc.gridy = 2;
         pnlForm.add(new JLabel("Spesialisasi / Kategori:"), gbc);
         
         gbc.gridy = 3;
-        gbc.weighty = 0.5; // Biar TextArea bisa memanjang
+        gbc.weighty = 0.5; 
         gbc.fill = GridBagConstraints.BOTH;
         txtSpec = new JTextArea();
         txtSpec.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -89,12 +89,12 @@ public class PanelInputVendor extends JPanel {
         JScrollPane scrollSpec = new JScrollPane(txtSpec);
         pnlForm.add(scrollSpec, gbc);
 
-        // Tombol Aksi
+        
         gbc.gridy = 4;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         
-        JPanel pnlButtons = new JPanel(new GridLayout(1, 3, 5, 0)); // Grid 3 kolom
+        JPanel pnlButtons = new JPanel(new GridLayout(1, 3, 5, 0)); 
         pnlButtons.setBackground(Color.WHITE);
 
         btnHapus = createButton("Hapus", new Color(231, 76, 60));
@@ -111,12 +111,12 @@ public class PanelInputVendor extends JPanel {
         
         pnlForm.add(pnlButtons, gbc);
         
-        // Tambahkan Spacer Kosong di bawah agar form terdorong ke atas
+        
         gbc.gridy = 5;
         gbc.weighty = 1.0;
         pnlForm.add(new JLabel(), gbc);
 
-        // B. PANEL TABEL (KANAN)
+        
         JPanel pnlTable = new JPanel(new BorderLayout());
         pnlTable.setBackground(Color.WHITE);
         pnlTable.setBorder(BorderFactory.createTitledBorder(
@@ -127,14 +127,14 @@ public class PanelInputVendor extends JPanel {
                 new Font("Segoe UI", Font.BOLD, 14)
         ));
 
-        // Setup Model Tabel Awal (Kosong)
+        
         tableModel = new DefaultTableModel(new String[]{"ID", "No", "Nama Vendor", "Spesialisasi"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
         tblVendor = new JTable(tableModel);
         
-        // Styling Tabel
+        
         tblVendor.setRowHeight(30);
         tblVendor.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tblVendor.setShowVerticalLines(false);
@@ -151,14 +151,14 @@ public class PanelInputVendor extends JPanel {
         
         pnlTable.add(scrollTable, BorderLayout.CENTER);
 
-        // GABUNGKAN
+        
         pnlContent.add(pnlForm, BorderLayout.WEST);
         pnlContent.add(pnlTable, BorderLayout.CENTER);
 
         add(pnlContent, BorderLayout.CENTER);
     }
 
-    // Helper untuk membuat tombol cantik
+    
     private JButton createButton(String text, Color bg) {
         JButton btn = new JButton(text);
         btn.setBackground(bg);
@@ -169,21 +169,21 @@ public class PanelInputVendor extends JPanel {
         return btn;
     }
 
-    // ==========================================
-    // 2. LOGIKA & FUNGSIONALITAS
-    // ==========================================
+    
+    
+    
 
     private void setupTable() {
-        // Sembunyikan kolom ID (index 0)
+        
         tblVendor.getColumnModel().getColumn(0).setMinWidth(0);
         tblVendor.getColumnModel().getColumn(0).setMaxWidth(0);
         tblVendor.getColumnModel().getColumn(0).setWidth(0);
         
-        // Lebar kolom No kecil saja
+        
         tblVendor.getColumnModel().getColumn(1).setMaxWidth(50);
         tblVendor.getColumnModel().getColumn(1).setPreferredWidth(40);
 
-        // Event Listener: Klik Baris
+        
         tblVendor.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tblVendor.getSelectedRow() != -1) {
                 fillFormFromTable();
@@ -212,9 +212,9 @@ public class PanelInputVendor extends JPanel {
             txtName.setText(tableModel.getValueAt(row, 2).toString());
             txtSpec.setText(tableModel.getValueAt(row, 3).toString());
 
-            // Ubah Mode Tombol
+            
             btnSimpan.setText("Update");
-            btnSimpan.setBackground(new Color(52, 152, 219)); // Ubah jadi Biru saat Edit
+            btnSimpan.setBackground(new Color(52, 152, 219)); 
             btnHapus.setEnabled(true);
             btnReset.setEnabled(true);
         }
@@ -227,12 +227,12 @@ public class PanelInputVendor extends JPanel {
         tblVendor.clearSelection();
 
         btnSimpan.setText("Simpan");
-        btnSimpan.setBackground(new Color(46, 204, 113)); // Hijau saat Baru
+        btnSimpan.setBackground(new Color(46, 204, 113)); 
         btnHapus.setEnabled(false);
         btnReset.setEnabled(true);
     }
 
-    // --- Action Handlers ---
+    
 
     private void actionSimpan(ActionEvent e) {
         String nama = txtName.getText().trim();
@@ -245,11 +245,11 @@ public class PanelInputVendor extends JPanel {
 
         boolean success = false;
         if (selectedId == 0) {
-            // CREATE
+            
             success = repo.saveVendor(nama, spec);
             if (success) JOptionPane.showMessageDialog(this, "Data Vendor Berhasil Disimpan!");
         } else {
-            // UPDATE
+            
             success = repo.updateVendor(selectedId, nama, spec);
             if (success) JOptionPane.showMessageDialog(this, "Data Vendor Berhasil Diperbarui!");
         }

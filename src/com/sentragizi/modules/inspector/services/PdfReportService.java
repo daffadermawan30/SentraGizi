@@ -16,18 +16,14 @@ import javax.swing.JOptionPane;
 
 public class PdfReportService {
 
-    // --- 1. KONFIGURASI FONT (HIERARKI DIPERBAIKI) ---
-    
-    // A. FONT KOP SURAT (HEADER)
+    // --- 1. KONFIGURASI FONT ---
     private static final Font FONT_KOP_MAIN = new Font(Font.FontFamily.TIMES_ROMAN, 16, Font.BOLD);
     private static final Font FONT_KOP_SUB = new Font(Font.FontFamily.TIMES_ROMAN, 11, Font.BOLD);
     private static final Font FONT_KOP_ADDR = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL);
 
-    // B. FONT JUDUL DOKUMEN (BODY) - Lebih Kecil dari Kop
     private static final Font FONT_DOC_TITLE = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.BOLD); 
     private static final Font FONT_DOC_SUBTITLE = new Font(Font.FontFamily.TIMES_ROMAN, 10, Font.BOLD); 
 
-    // C. FONT ISI / TABEL
     private static final Font FONT_SECTION_HEADER = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD);
     private static final Font FONT_TABLE_HEADER = new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD, BaseColor.WHITE);
     private static final Font FONT_NORMAL = new Font(Font.FontFamily.TIMES_ROMAN, 9, Font.NORMAL);
@@ -36,9 +32,11 @@ public class PdfReportService {
     private static final Font FONT_FOOTER = new Font(Font.FontFamily.HELVETICA, 7, Font.ITALIC, BaseColor.GRAY);
     
     // --- WARNA ---
-    private static final BaseColor COLOR_HEADER_BG = new BaseColor(44, 62, 80); // Dark Blue
+    private static final BaseColor COLOR_HEADER_BG = new BaseColor(44, 62, 80); 
     private static final BaseColor COLOR_SUCCESS = new BaseColor(39, 174, 96); // Hijau
     private static final BaseColor COLOR_DANGER = new BaseColor(192, 57, 43); // Merah
+    // TAMBAHAN WARNA ORANGE UNTUK RECHECK
+    private static final BaseColor COLOR_WARNING = new BaseColor(230, 126, 34); 
     private static final BaseColor COLOR_BORDER = new BaseColor(200, 200, 200);
 
     /**
@@ -70,10 +68,8 @@ public class PdfReportService {
                 
                 document.open();
 
-                // --- DATA HOLDER ---
                 String menuName = "-", inspectorName = "-", kitchenName = "-", targetName = "-", dateStr = "-", statusBatch = "-";
 
-                // Pindahkan kursor ke baris pertama untuk ambil Header Info
                 if (rs.next()) {
                     menuName = checkNull(rs.getString("menu_name"));
                     inspectorName = checkNull(rs.getString("inspector_name"));
@@ -90,10 +86,9 @@ public class PdfReportService {
                     return;
                 }
 
-                // 1. KOP SURAT
+                // KOP SURAT
                 addProfessionalLetterHead(document);
 
-                // 2. JUDUL
                 Paragraph title = new Paragraph("BERITA ACARA INSPEKSI MUTU", FONT_DOC_TITLE);
                 title.setAlignment(Element.ALIGN_CENTER);
                 title.setSpacingBefore(10);
@@ -104,36 +99,30 @@ public class PdfReportService {
                 subtitle.setSpacingAfter(15);
                 document.add(subtitle);
 
-                // 3. TABEL INFO (LAYOUT DIPERBAIKI: Label-Val | Label-Val)
+                // INFO TABLE
                 PdfPTable infoTable = new PdfPTable(4); 
                 infoTable.setWidthPercentage(100);
-                // Fix: Lebar kolom diseimbangkan agar data muat
                 infoTable.setWidths(new float[]{3f, 5f, 3f, 5f}); 
 
-                // Baris 1
                 addMetadataRowSimple(infoTable, "Waktu Inspeksi", ": " + dateStr + " WIB");
                 addMetadataRowSimple(infoTable, "Lokasi Dapur", ": " + kitchenName);
                 
-                // Baris 2
                 addMetadataRowSimple(infoTable, "Menu Produksi", ": " + menuName);
                 addMetadataRowSimple(infoTable, "Tujuan Distribusi", ": " + targetName);
                 
-                // Baris 3
                 addMetadataRowSimple(infoTable, "Petugas", ": " + inspectorName);
                 addMetadataRowSimple(infoTable, "Status Akhir", ": " + formatStatus(statusBatch));
 
                 document.add(infoTable);
                 document.add(new Paragraph("\n"));
 
-                // 4. HEADER TABEL
                 Paragraph detailHeader = new Paragraph("HASIL PEMERIKSAAN BAHAN BAKU", FONT_SECTION_HEADER);
                 detailHeader.setSpacingAfter(5);
                 document.add(detailHeader);
 
-                // 5. TABEL UTAMA
+                // DETAIL TABLE
                 PdfPTable table = new PdfPTable(7);
                 table.setWidthPercentage(100);
-                // Lebar kolom disesuaikan untuk OK/X yang kecil
                 table.setWidths(new float[]{3f, 2.5f, 1f, 1f, 1f, 1.5f, 2.5f});
                 table.setHeaderRows(1);
 
@@ -157,7 +146,6 @@ public class PdfReportService {
                     table.addCell(createCell(material, FONT_NORMAL, Element.ALIGN_LEFT, bgColor));
                     table.addCell(createCell(vendor, FONT_SMALL, Element.ALIGN_LEFT, bgColor));
                     
-                    // FIX: Gunakan Text OK/X
                     table.addCell(createTextSymbolCell(rs.getBoolean("bau_ok"), bgColor));
                     table.addCell(createTextSymbolCell(rs.getBoolean("rasa_ok"), bgColor));
                     table.addCell(createTextSymbolCell(rs.getBoolean("tekstur_ok"), bgColor));
@@ -170,19 +158,18 @@ public class PdfReportService {
 
                 document.add(table);
 
-                // 6. KETERANGAN
                 Paragraph legend = new Paragraph("Ket: Tks = Tekstur. Status berdasarkan pemeriksaan fisik & AI.", FONT_SMALL);
                 legend.setSpacingBefore(2);
                 document.add(legend);
 
-                // 7. TANDA TANGAN
+                // TANDA TANGAN
                 document.add(new Paragraph("\n"));
                 PdfPTable signTable = new PdfPTable(3);
                 signTable.setWidthPercentage(100);
                 signTable.setWidths(new float[]{1, 1, 1});
 
-                signTable.addCell(createEmptyCell()); // Kiri Kosong
-                signTable.addCell(createEmptyCell()); // Tengah Kosong
+                signTable.addCell(createEmptyCell()); 
+                signTable.addCell(createEmptyCell()); 
 
                 PdfPCell signCell = new PdfPCell();
                 signCell.setBorder(Rectangle.NO_BORDER);
@@ -194,7 +181,6 @@ public class PdfReportService {
                 signTable.addCell(signCell);
                 document.add(signTable);
 
-                // 8. FOOTER
                 SimpleDateFormat sdfFooter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                 Paragraph footer = new Paragraph("Dicetak dari Sistem SentraGizi pada " + sdfFooter.format(new Date()), FONT_FOOTER);
                 footer.setAlignment(Element.ALIGN_RIGHT);
@@ -220,7 +206,6 @@ public class PdfReportService {
 
     /**
      * GENERATE LAPORAN REKAP PERIODE (UNTUK ADMIN)
-     * (DIIMPLEMENTASIKAN KEMBALI)
      */
     public void generatePeriodReport(String startDate, String endDate) {
         Document document = new Document(PageSize.A4.rotate());
@@ -233,10 +218,8 @@ public class PdfReportService {
             
             document.open();
 
-            // Kop Surat
             addProfessionalLetterHead(document);
 
-            // Judul
             Paragraph title = new Paragraph("REKAPITULASI INSPEKSI MUTU", FONT_DOC_TITLE);
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
@@ -246,7 +229,6 @@ public class PdfReportService {
             periode.setSpacingAfter(15);
             document.add(periode);
 
-            // Tabel Rekap
             PdfPTable table = new PdfPTable(8);
             table.setWidthPercentage(100);
             table.setWidths(new float[]{0.8f, 2f, 2f, 3f, 3f, 3f, 2f, 2.5f});
@@ -263,7 +245,8 @@ public class PdfReportService {
             InspectionRepository repo = new InspectionRepository();
             ResultSet rs = repo.getReportByDateRange(startDate, endDate); 
 
-            int totalPass = 0, totalFail = 0, rowNum = 0;
+            int totalPass = 0, totalFail = 0, totalRecheck = 0; // Tambah Counter Recheck
+            int rowNum = 0;
 
             if (rs != null) {
                 while (rs.next()) {
@@ -285,18 +268,22 @@ public class PdfReportService {
                     table.addCell(createCell(kitchen, FONT_SMALL, Element.ALIGN_LEFT, bgColor));
                     table.addCell(createCell(target, FONT_SMALL, Element.ALIGN_LEFT, bgColor));
                     
+                    // UPDATE LOGIKA HITUNG
                     String status = rs.getString("workflow_status");
-                    if("COMPLETED".equalsIgnoreCase(status)) totalPass++; else totalFail++;
+                    if("COMPLETED".equalsIgnoreCase(status)) totalPass++; 
+                    else if("RECHECK".equalsIgnoreCase(status)) totalRecheck++;
+                    else totalFail++;
                     
-                    table.addCell(createStatusCell(status.equals("COMPLETED") ? "PASS" : "FAIL", bgColor));
+                    // UPDATE: Pass status langsung ke createStatusCell
+                    table.addCell(createStatusCell(status, bgColor));
                     table.addCell(createCell(checkNull(rs.getString("inspector_name")), FONT_SMALL, Element.ALIGN_LEFT, bgColor));
                 }
             }
             document.add(table);
 
-            // Summary Sederhana
             document.add(new Paragraph("\n"));
-            Paragraph summary = new Paragraph("Total: " + (totalPass+totalFail) + " | Diterima: " + totalPass + " | Ditolak: " + totalFail, FONT_BOLD_NORMAL);
+            // UPDATE TEXT SUMMARY
+            Paragraph summary = new Paragraph("Total: " + rowNum + " | Diterima: " + totalPass + " | Ditolak: " + totalFail + " | Periksa Ulang: " + totalRecheck, FONT_BOLD_NORMAL);
             summary.setAlignment(Element.ALIGN_RIGHT);
             document.add(summary);
 
@@ -368,7 +355,6 @@ public class PdfReportService {
         return cell;
     }
 
-    // FIX: Menggunakan Teks OK / X (Bukan Simbol Checklist)
     private PdfPCell createTextSymbolCell(boolean ok, BaseColor bg) {
         String s = ok ? "OK" : "X";
         Font f = new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD, ok ? COLOR_SUCCESS : COLOR_DANGER);
@@ -380,10 +366,24 @@ public class PdfReportService {
         return cell;
     }
 
+    // UPDATE: Method ini diperbaiki untuk menangani RECHECK
     private PdfPCell createStatusCell(String status, BaseColor bg) {
-        boolean pass = "PASS".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status);
-        Font f = new Font(Font.FontFamily.HELVETICA, 8, Font.BOLD, pass ? COLOR_SUCCESS : COLOR_DANGER);
-        PdfPCell cell = new PdfPCell(new Phrase(pass ? "PASS" : "FAIL", f));
+        String displayText;
+        BaseColor textColor;
+
+        if ("COMPLETED".equalsIgnoreCase(status) || "PASS".equalsIgnoreCase(status)) {
+            displayText = "PASS";
+            textColor = COLOR_SUCCESS;
+        } else if ("RECHECK".equalsIgnoreCase(status)) {
+            displayText = "RECHECK";
+            textColor = COLOR_WARNING; // Orange
+        } else {
+            displayText = "FAIL";
+            textColor = COLOR_DANGER;
+        }
+
+        Font f = new Font(Font.FontFamily.HELVETICA, 8, Font.BOLD, textColor);
+        PdfPCell cell = new PdfPCell(new Phrase(displayText, f));
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cell.setBackgroundColor(bg);
@@ -397,8 +397,10 @@ public class PdfReportService {
         return cell;
     }
 
+    // UPDATE: Menambahkan format string untuk RECHECK
     private String formatStatus(String status) {
         if ("COMPLETED".equalsIgnoreCase(status)) return "DITERIMA";
+        if ("RECHECK".equalsIgnoreCase(status)) return "PERIKSA ULANG";
         if ("REJECTED".equalsIgnoreCase(status)) return "DITOLAK";
         return status;
     }

@@ -9,28 +9,28 @@ import java.util.List;
 
 public class MenuRepository {
 
-    // 1. FUNGSI SIMPAN (UPDATE: Tambah ai_label & is_optional)
+    
     public boolean saveMenuWithComponents(String menuName, List<MenuComponent> components) {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); // MULAI TRANSAKSI
+            conn.setAutoCommit(false); 
 
-            // A. Simpan Header Menu
+            
             String sqlMenu = "INSERT INTO menus (name) VALUES (?)";
             PreparedStatement psMenu = conn.prepareStatement(sqlMenu, Statement.RETURN_GENERATED_KEYS);
             psMenu.setString(1, menuName);
             psMenu.executeUpdate();
 
-            // Ambil ID Menu baru
+            
             ResultSet rs = psMenu.getGeneratedKeys();
             int menuId = 0;
             if (rs.next()) {
                 menuId = rs.getInt(1);
             }
 
-            // B. Simpan Detail Komponen (UPDATE QUERY DISINI)
-            // Kita tambah kolom ai_label dan is_optional
+            
+            
             String sqlComp = "INSERT INTO menu_components " +
                              "(menu_id, component_name, ai_label, is_optional, needs_raw_check, raw_material_name) " +
                              "VALUES (?, ?, ?, ?, ?, ?)";
@@ -41,10 +41,10 @@ public class MenuRepository {
                 psComp.setInt(1, menuId);
                 psComp.setString(2, comp.getComponentName());
                 
-                // --- UPDATE PENTING ---
-                psComp.setString(3, comp.getAiLabel());      // Simpan label AI (misal: "ayam_goreng")
-                psComp.setBoolean(4, comp.isOptional());     // Simpan status Opsional
-                // ----------------------
+                
+                psComp.setString(3, comp.getAiLabel());      
+                psComp.setBoolean(4, comp.isOptional());     
+                
                 
                 psComp.setBoolean(5, comp.isNeedsRawCheck());
                 psComp.setString(6, comp.getRawMaterialName());
@@ -53,7 +53,7 @@ public class MenuRepository {
             }
             psComp.executeBatch();
 
-            conn.commit(); // SIMPAN PERMANEN
+            conn.commit(); 
             return true;
 
         } catch (Exception e) {
@@ -65,8 +65,8 @@ public class MenuRepository {
         }
     }
 
-    // 2. FUNGSI AMBIL KOMPONEN (WAJIB ADA UNTUK AI ENGINE)
-    // Method ini akan dipanggil oleh PanelStage2/ComponentCounter
+    
+    
     public List<MenuComponent> getComponentsByMenuId(int menuId) {
         List<MenuComponent> list = new ArrayList<>();
         String sql = "SELECT * FROM menu_components WHERE menu_id = ?";
@@ -78,13 +78,13 @@ public class MenuRepository {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                // Pastikan urutan constructor sesuai dengan Model MenuComponent yang baru
+                
                 list.add(new MenuComponent(
                     rs.getInt("id"),
                     rs.getInt("menu_id"),
                     rs.getString("component_name"),
-                    rs.getString("ai_label"),      // <--- Ambil Label AI
-                    rs.getBoolean("is_optional"),  // <--- Ambil Status Opsional
+                    rs.getString("ai_label"),      
+                    rs.getBoolean("is_optional"),  
                     rs.getBoolean("needs_raw_check"),
                     rs.getString("raw_material_name")
                 ));
@@ -95,7 +95,7 @@ public class MenuRepository {
         return list;
     }
 
-    // 3. FUNGSI AMBIL DAFTAR MENU (Untuk Dropdown Pilihan)
+    
     public List<Menu> getAllMenus() {
         List<Menu> menus = new ArrayList<>();
         String sql = "SELECT * FROM menus";
@@ -122,9 +122,9 @@ public class MenuRepository {
         } catch (Exception e) { e.printStackTrace(); return false; }
     }
 
-    // 2. Hapus Semua Komponen (Dipakai saat Update Menu agar bersih)
+    
     public boolean deleteMenuComponents(int menuId) {
-        // 1. Cek apakah ada inspeksi yang menggunakan komponen dari menu ini?
+        
         String checkSql = "SELECT COUNT(*) FROM inspection_details d " +
                           "JOIN menu_components c ON d.component_id = c.id " +
                           "WHERE c.menu_id = ?";
@@ -133,26 +133,26 @@ public class MenuRepository {
 
         try (Connection conn = DatabaseConnection.getConnection()) {
             
-            // Lakukan pengecekan
+            
             try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
                 psCheck.setInt(1, menuId);
                 ResultSet rs = psCheck.executeQuery();
                 if (rs.next()) {
                     int count = rs.getInt(1);
                     if (count > 0) {
-                        // ADA RIWAYAT! JANGAN HAPUS.
-                        // Kembalikan false agar PanelInputMenu tahu dan memberi peringatan ke user.
+                        
+                        
                         System.out.println("Gagal Hapus: Ada " + count + " riwayat inspeksi terkait.");
                         return false; 
                     }
                 }
             }
 
-            // Jika aman (tidak ada riwayat), baru hapus
+            
             try (PreparedStatement psDelete = conn.prepareStatement(deleteSql)) {
                 psDelete.setInt(1, menuId);
                 psDelete.executeUpdate();
-                return true; // Berhasil hapus
+                return true; 
             }
             
         } catch (Exception e) {
@@ -161,7 +161,7 @@ public class MenuRepository {
         }
     }
 
-    // 3. Simpan Komponen (Versi tanpa Transaksi, untuk dipakai di Update)
+    
     public boolean saveComponents(int menuId, List<MenuComponent> components) {
         String sql = "INSERT INTO menu_components (menu_id, component_name, ai_label, is_optional, needs_raw_check, raw_material_name) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -181,9 +181,9 @@ public class MenuRepository {
         } catch (Exception e) { e.printStackTrace(); return false; }
     }
 
-    // 4. Hapus Menu (Cascading delete biasanya otomatis di DB, tapi kita buat manual biar aman)
+    
     public boolean deleteMenu(int menuId) {
-        // Hapus detail dulu (optional jika DB sudah cascade)
+        
         deleteMenuComponents(menuId);
         
         String sql = "DELETE FROM menus WHERE id = ?";

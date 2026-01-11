@@ -8,7 +8,7 @@ import java.util.List;
 
 public class DistributionTargetRepository {
     
-    // METHOD 1: Dipakai oleh PanelStage1 (Hanya yang Aktif)
+    
     public List<DistributionTarget> getAllActiveTargets() {
         List<DistributionTarget> list = new ArrayList<>();
         String sql = "SELECT * FROM distribution_targets WHERE is_active = 1 ORDER BY type, name";
@@ -21,10 +21,10 @@ public class DistributionTargetRepository {
         return list;
     }
 
-    // METHOD 2: BARU - Dipakai oleh Admin (Semua Data)
+    
     public List<DistributionTarget> getAllTargets() {
         List<DistributionTarget> list = new ArrayList<>();
-        // Urutkan: Aktif dulu, baru Non-Aktif
+        
         String sql = "SELECT * FROM distribution_targets ORDER BY is_active DESC, type, name";
         
         try (Connection conn = DatabaseConnection.getConnection();
@@ -35,7 +35,7 @@ public class DistributionTargetRepository {
         return list;
     }
 
-    // Helper untuk ekstrak data (biar tidak duplikasi kode)
+    
     private void extractData(ResultSet rs, List<DistributionTarget> list) throws SQLException {
         while (rs.next()) {
             list.add(new DistributionTarget(
@@ -48,7 +48,7 @@ public class DistributionTargetRepository {
         }
     }
 
-    // --- CRUD METHODS (Seperti sebelumnya) ---
+    
 
     public boolean save(String name, String location, String type) {
         String sql = "INSERT INTO distribution_targets (name, location, type, is_active) VALUES (?, ?, ?, 1)";

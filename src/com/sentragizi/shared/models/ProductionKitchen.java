@@ -15,7 +15,7 @@ public class ProductionKitchen {
         this.isActive = isActive;
     }
 
-    // Getters and Setters
+    
     public int getId() {
         return id;
     }

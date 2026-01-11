@@ -10,28 +10,28 @@ import java.sql.ResultSet;
 public class AuthService {
     
     public boolean login(String username, String password) {
-        // Query cek user
+        
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setString(1, username);
-            ps.setString(2, password); // Note: Di real app, gunakan Hashing (BCrypt)
+            ps.setString(2, password); 
             
             ResultSet rs = ps.executeQuery();
             
             if (rs.next()) {
-                // LOGIN SUKSES!
-                // 1. Buat objek User
+                
+                
                 User user = new User(
                     rs.getInt("id"),
                     rs.getString("username"),
-                    rs.getString("role"), // "ADMIN" atau "INSPECTOR"
+                    rs.getString("role"), 
                     rs.getString("fullname")
                 );
                 
-                // 2. Simpan ke Session (Biar aplikasi tahu siapa yang login)
+                
                 SessionManager.login(user);
                 return true;
             }
@@ -40,6 +40,6 @@ public class AuthService {
             e.printStackTrace();
         }
         
-        return false; // Login Gagal
+        return false; 
     }
 }

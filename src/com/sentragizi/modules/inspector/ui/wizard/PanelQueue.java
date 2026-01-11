@@ -2,7 +2,7 @@ package com.sentragizi.modules.inspector.ui.wizard;
 
 import com.sentragizi.infrastructure.database.DatabaseConnection;
 import com.sentragizi.modules.inspector.ui.InspectorMainFrame;
-import com.sentragizi.shared.utils.SessionManager; // Pastikan import ini ada untuk hapus session
+import com.sentragizi.shared.utils.SessionManager; 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -23,7 +23,7 @@ public class PanelQueue extends JPanel {
     private DefaultTableModel tableModel;
     private JButton btnRefresh;
     private JButton btnNewInspection;
-    private JButton btnLogout; // Tombol baru
+    private JButton btnLogout; 
 
     public PanelQueue(InspectorMainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -36,7 +36,7 @@ public class PanelQueue extends JPanel {
         setBackground(new Color(245, 247, 250));
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // --- 1. HEADER SECTION ---
+        
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setOpaque(false);
 
@@ -53,16 +53,16 @@ public class PanelQueue extends JPanel {
         pnlTitle.add(lblTitle);
         pnlTitle.add(lblSubtitle);
 
-        // --- GROUP BUTTONS (Refresh & Logout) ---
+        
         JPanel pnlHeaderActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlHeaderActions.setOpaque(false);
 
-        // Tombol Refresh
+        
         btnRefresh = new JButton("Refresh Data");
         styleSecondaryButton(btnRefresh);
         btnRefresh.addActionListener(e -> loadData());
 
-        // Tombol Logout
+        
         btnLogout = new JButton("Logout");
         styleLogoutButton(btnLogout);
         btnLogout.addActionListener(this::actionLogout);
@@ -71,11 +71,11 @@ public class PanelQueue extends JPanel {
         pnlHeaderActions.add(btnLogout);
 
         pnlHeader.add(pnlTitle, BorderLayout.CENTER);
-        pnlHeader.add(pnlHeaderActions, BorderLayout.EAST); // Tambahkan panel aksi ke Timur
+        pnlHeader.add(pnlHeaderActions, BorderLayout.EAST); 
 
         add(pnlHeader, BorderLayout.NORTH);
 
-        // --- 2. TABLE SECTION (CENTER) ---
+        
         String[] columns = {"ID Batch", "Waktu", "Menu Masakan", "Status", "Petugas", "FullUUID"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -123,7 +123,7 @@ public class PanelQueue extends JPanel {
 
         add(pnlTableCard, BorderLayout.CENTER);
 
-        // --- 3. FOOTER / ACTION BUTTON ---
+        
         JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnlFooter.setOpaque(false);
 
@@ -139,7 +139,7 @@ public class PanelQueue extends JPanel {
         add(pnlFooter, BorderLayout.SOUTH);
     }
 
-    // --- HELPER STYLING ---
+    
     private void styleSecondaryButton(JButton btn) {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btn.setBackground(Color.WHITE);
@@ -151,7 +151,7 @@ public class PanelQueue extends JPanel {
 
     private void styleLogoutButton(JButton btn) {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btn.setBackground(new Color(231, 76, 60)); // Merah (Alizarin)
+        btn.setBackground(new Color(231, 76, 60)); 
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setPreferredSize(new Dimension(100, 35));
@@ -186,39 +186,53 @@ public class PanelQueue extends JPanel {
         if (mainFrame != null) mainFrame.showPage("STAGE1");
     }
 
-    // --- LOGIKA LOGOUT ---
+    
     private void actionLogout(ActionEvent e) {
         int confirm = JOptionPane.showConfirmDialog(this, 
                 "Apakah Anda yakin ingin logout?", "Konfirmasi Logout", 
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         
         if (confirm == JOptionPane.YES_OPTION) {
-            // 1. Hapus session
+            
             SessionManager.logout();
             
-            // 2. Tutup frame utama dan buka LoginFrame (sesuaikan dengan nama class login Anda)
-            // Asumsi: mainFrame punya method logout() atau dispose()
+            
+            
             mainFrame.dispose(); 
-            // Pastikan Anda memanggil class Login yang benar di sini:
+            
              new com.sentragizi.modules.auth.ui.LoginFrame().setVisible(true);
         }
     }
 
+    
     private class StatusCellRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            String status = (String) value;
+            
+            String status = (value != null) ? value.toString() : "";
+            
+            
             if ("COMPLETED".equalsIgnoreCase(status)) {
-                c.setForeground(new Color(39, 174, 96));
-                setText("✅ LOLOS");
+                c.setForeground(new Color(39, 174, 96)); 
+                setText("LOLOS");
+            
+            
+            } else if ("RECHECK".equalsIgnoreCase(status)) {
+                c.setForeground(new Color(230, 126, 34)); 
+                setText("PERIKSA ULANG");
+            
+            
             } else if ("REJECTED".equalsIgnoreCase(status) || "FAIL".equalsIgnoreCase(status)) {
-                c.setForeground(new Color(192, 57, 43));
-                setText("❌ DITOLAK");
+                c.setForeground(new Color(192, 57, 43)); 
+                setText("DITOLAK");
+            
+            
             } else {
-                c.setForeground(new Color(243, 156, 18));
-                setText("⏳ PROSES");
+                c.setForeground(new Color(41, 128, 185)); 
+                setText("PROSES");
             }
+            
             setFont(new Font("Segoe UI", Font.BOLD, 12));
             return c;
         }

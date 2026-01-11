@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class PanelInputMenu extends JPanel {
 
-    // --- Components ---
+    
     private JTextField txtMenuName;
     private JComboBox<String> cmbCompName; 
     private JTextField txtAiLabel;
@@ -30,17 +30,17 @@ public class PanelInputMenu extends JPanel {
     private JTable tblComponents;
     private DefaultTableModel tableModel;
     
-    // Tambahan tombol Hapus Baris
+    
     private JButton btnAdd, btnSave, btnReset, btnList, btnDeleteRow;
 
-    // --- Data & Logic ---
+    
     private int selectedMenuId = 0; 
     private final MenuRepository repo = new MenuRepository();
     
-    // MAPPING DATA
+    
     private final Map<String, String> foodToRawMap = new HashMap<>();
 
-    // --- Colors ---
+    
     private final Color BG_COLOR = new Color(245, 247, 250);
     private final Color PRIMARY_COLOR = new Color(44, 62, 80);
     private final Color ACCENT_COLOR = new Color(52, 152, 219);
@@ -54,9 +54,9 @@ public class PanelInputMenu extends JPanel {
     private void initDataMapping() {
         foodToRawMap.put("Nasi Putih", "Beras");
         foodToRawMap.put("Nasi Goreng", "Beras");
-        foodToRawMap.put("Ayam Bakar", "Daging Ayam");
-        foodToRawMap.put("Ayam Goreng", "Daging Ayam");
-        foodToRawMap.put("Ayam Kecap", "Daging Ayam");
+        foodToRawMap.put("Ayam Bakar", "Ayam");
+        foodToRawMap.put("Ayam Goreng", "Ayam");
+        foodToRawMap.put("Ayam Kecap", "Ayam");
         foodToRawMap.put("Pisang Cuci Mulut", "Pisang");
         foodToRawMap.put("Susu Kotak/Gelas", "Susu");
     }
@@ -65,7 +65,7 @@ public class PanelInputMenu extends JPanel {
         setLayout(new BorderLayout(0, 0));
         setBackground(BG_COLOR);
 
-        // --- HEADER ---
+        
         JPanel pnlHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
         pnlHeader.setBackground(BG_COLOR);
         JLabel lblTitle = new JLabel("Manajemen Resep & Komponen Menu");
@@ -74,7 +74,7 @@ public class PanelInputMenu extends JPanel {
         pnlHeader.add(lblTitle);
         add(pnlHeader, BorderLayout.NORTH);
 
-        // --- SPLIT PANE ---
+        
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setDividerLocation(380); 
         splitPane.setDividerSize(5);
@@ -102,7 +102,7 @@ public class PanelInputMenu extends JPanel {
         gbc.weightx = 1.0;
         gbc.gridx = 0;
 
-        // --- Section 1 ---
+        
         gbc.gridy = 0;
         JLabel lblSection1 = new JLabel("1. Informasi Menu");
         lblSection1.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -118,7 +118,7 @@ public class PanelInputMenu extends JPanel {
         gbc.gridy++;
         pnlForm.add(Box.createVerticalStrut(15), gbc);
 
-        // --- Section 2 ---
+        
         gbc.gridy++;
         JLabel lblSection2 = new JLabel("2. Tambah Komponen / Masakan");
         lblSection2.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -128,7 +128,7 @@ public class PanelInputMenu extends JPanel {
         gbc.gridy++;
         pnlForm.add(new JLabel("Nama Komponen Masakan:"), gbc);
         
-        // --- DROPDOWN MASAKAN ---
+        
         gbc.gridy++;
         cmbCompName = new JComboBox<>();
         cmbCompName.addItem("- Pilih / Ketik Baru -");
@@ -141,7 +141,7 @@ public class PanelInputMenu extends JPanel {
         cmbCompName.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         cmbCompName.setBackground(Color.WHITE);
         
-        // LOGIKA AUTO-FILL
+        
         cmbCompName.addActionListener(e -> {
             String selectedFood = (String) cmbCompName.getSelectedItem();
             if (selectedFood != null && !selectedFood.equals("- Pilih / Ketik Baru -")) {
@@ -149,7 +149,7 @@ public class PanelInputMenu extends JPanel {
                 String rawMaterial = foodToRawMap.get(selectedFood);
                 
                 if (rawMaterial == null) {
-                    if (selectedFood.toLowerCase().contains("ayam")) rawMaterial = "Daging Ayam";
+                    if (selectedFood.toLowerCase().contains("ayam")) rawMaterial = "Ayam";
                     else if (selectedFood.toLowerCase().contains("nasi")) rawMaterial = "Beras";
                     else if (selectedFood.toLowerCase().contains("pisang")) rawMaterial = "Pisang";
                     else if (selectedFood.toLowerCase().contains("susu")) rawMaterial = "Susu";
@@ -186,7 +186,7 @@ public class PanelInputMenu extends JPanel {
         txtAiLabel = createTextField();
         pnlForm.add(txtAiLabel, gbc);
 
-        // Checkboxes
+        
         gbc.gridy++;
         JPanel pnlChecks = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         pnlChecks.setBackground(Color.WHITE);
@@ -203,7 +203,7 @@ public class PanelInputMenu extends JPanel {
         gbc.gridy++;
         pnlForm.add(chkOptional, gbc); 
 
-        // Button Add
+        
         gbc.gridy++;
         gbc.insets = new Insets(20, 5, 5, 5);
         btnAdd = createButton("⬇ Tambahkan ke Tabel", new Color(52, 152, 219)); 
@@ -238,7 +238,7 @@ public class PanelInputMenu extends JPanel {
         tblComponents.setSelectionBackground(new Color(232, 240, 254));
         tblComponents.setSelectionForeground(Color.BLACK);
 
-        // --- FITUR BARU: KLIK 2X UNTUK EDIT ---
+        
         tblComponents.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -258,18 +258,18 @@ public class PanelInputMenu extends JPanel {
         scrollPane.getViewport().setBackground(Color.WHITE);
         pnlRight.add(scrollPane, BorderLayout.CENTER);
 
-        // --- Tombol Aksi Bawah (Update) ---
+        
         JPanel pnlBottom = new JPanel(new BorderLayout());
         pnlBottom.setOpaque(false);
 
-        // Panel Tombol Tabel (Hapus Baris)
+        
         JPanel pnlTableActions = new JPanel(new FlowLayout(FlowLayout.LEFT));
         pnlTableActions.setOpaque(false);
         btnDeleteRow = createButton("Hapus Baris Terpilih", DELETE_COLOR);
         btnDeleteRow.addActionListener(this::actionDeleteRow);
         pnlTableActions.add(btnDeleteRow);
         
-        // Panel Tombol Global (Simpan/List)
+        
         JPanel pnlGlobalActions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnlGlobalActions.setOpaque(false);
 
@@ -294,7 +294,7 @@ public class PanelInputMenu extends JPanel {
         return pnlRight;
     }
 
-    // --- Helper UI Methods ---
+    
     private JTextField createTextField() {
         JTextField txt = new JTextField();
         txt.setPreferredSize(new Dimension(0, 35));
@@ -317,9 +317,9 @@ public class PanelInputMenu extends JPanel {
         return btn;
     }
 
-    // ==========================================
-    // LOGIC & ACTIONS
-    // ==========================================
+    
+    
+    
 
     private void resetForm() {
         selectedMenuId = 0;
@@ -330,7 +330,7 @@ public class PanelInputMenu extends JPanel {
         btnSave.setBackground(new Color(46, 204, 113)); 
     }
 
-    // Reset hanya bagian input komponen, bukan nama menu
+    
     private void resetInputComponents() {
         cmbCompName.setSelectedIndex(0);
         txtAiLabel.setText("");
@@ -363,10 +363,10 @@ public class PanelInputMenu extends JPanel {
         }
 
         tableModel.addRow(new Object[]{comp, aiLabel, isOptional, check, raw});
-        resetInputComponents(); // Bersihkan input setelah add
+        resetInputComponents(); 
     }
 
-    // --- LOGIKA BARU: HAPUS BARIS ---
+    
     private void actionDeleteRow(ActionEvent e) {
         int row = tblComponents.getSelectedRow();
         if (row != -1) {
@@ -376,23 +376,23 @@ public class PanelInputMenu extends JPanel {
         }
     }
 
-    // --- LOGIKA BARU: EDIT (AMBIL DATA KE FORM) ---
-    // --- LOGIKA BARU: EDIT DENGAN PENGAMANAN DATA ---
+    
+    
     private void actionEditRow() {
         int row = tblComponents.getSelectedRow();
         if (row != -1) {
             
-            // ====================================================================
-            // LANGKAH 1: CEK APAKAH FORM SEDANG TERISI? (JANGAN SAMPAI HILANG)
-            // ====================================================================
+            
+            
+            
             String currentFormComp = "";
             Object selectedObj = cmbCompName.getSelectedItem();
             if (selectedObj != null) {
                 currentFormComp = selectedObj.toString().trim();
             }
 
-            // Jika form tidak kosong (User sedang mengedit sesuatu atau sudah mengetik)
-            // Maka kembalikan data form tersebut ke tabel dulu (Baris paling bawah)
+            
+            
             if (!currentFormComp.isEmpty() && !currentFormComp.equals("- Pilih / Ketik Baru -")) {
                 
                 String formAi = txtAiLabel.getText();
@@ -400,22 +400,22 @@ public class PanelInputMenu extends JPanel {
                 boolean formRawCheck = chkRaw.isSelected();
                 String formRawName = txtRawName.getText();
 
-                // Masukkan kembali data yang "tergusur" ke dalam tabel
+                
                 tableModel.addRow(new Object[]{
                     currentFormComp, formAi, formOpt, formRawCheck, formRawName
                 });
             }
 
-            // ====================================================================
-            // LANGKAH 2: AMBIL DATA BARU DARI TABEL KE FORM
-            // ====================================================================
+            
+            
+            
             String comp = tableModel.getValueAt(row, 0).toString();
             String aiLabel = tableModel.getValueAt(row, 1).toString();
             boolean isOptional = (boolean) tableModel.getValueAt(row, 2);
             boolean check = (boolean) tableModel.getValueAt(row, 3);
             String raw = tableModel.getValueAt(row, 4).toString();
 
-            // Set ke UI
+            
             cmbCompName.setSelectedItem(comp);
             if (!comp.equals(cmbCompName.getSelectedItem())) {
                cmbCompName.getEditor().setItem(comp);
@@ -427,16 +427,16 @@ public class PanelInputMenu extends JPanel {
             txtRawName.setText(raw);
             txtRawName.setEnabled(check);
 
-            // ====================================================================
-            // LANGKAH 3: HAPUS BARIS YANG DIPILIH DARI TABEL (PINDAH KE FORM)
-            // ====================================================================
+            
+            
+            
             tableModel.removeRow(row);
             
-            // Visual Feedback
+            
             btnAdd.setText("📝 Update (Simpan Perubahan)");
             btnAdd.setBackground(ACCENT_COLOR);
             
-            // Timer kembalikan warna tombol normal setelah 3 detik
+            
             Timer t = new Timer(3000, x -> {
                 btnAdd.setText("⬇ Tambahkan ke Tabel");
                 btnAdd.setBackground(new Color(52, 152, 219));

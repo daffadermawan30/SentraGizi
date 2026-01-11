@@ -9,12 +9,6 @@ import java.nio.file.Path;
 
 public class QRCodeService {
 
-    /**
-     * Menghasilkan kode QR dan menyimpannya sebagai file gambar.
-     * * @param content Konten yang akan dikodekan (misalnya URL).
-     * @param filePath Path lengkap file gambar yang akan disimpan.
-     * @return True jika berhasil, false jika gagal.
-     */
     public boolean generate(String content, String filePath) {
         int width = 300;
         int height = 300;

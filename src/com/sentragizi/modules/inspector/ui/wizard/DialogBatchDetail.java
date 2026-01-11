@@ -23,7 +23,7 @@ public class DialogBatchDetail extends JDialog {
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout());
 
-        // --- 1. HEADER ---
+        
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(new Color(250, 250, 250));
         pnlHeader.setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -40,7 +40,7 @@ public class DialogBatchDetail extends JDialog {
         pnlHeader.add(lblUuid, BorderLayout.SOUTH);
         add(pnlHeader, BorderLayout.NORTH);
 
-        // --- 2. TABEL ---
+        
         InspectionRepository repo = new InspectionRepository();
         model = repo.getDetailTableForView(batchUuid);
 
@@ -56,13 +56,13 @@ public class DialogBatchDetail extends JDialog {
         table.setSelectionForeground(Color.BLACK);
         table.setShowVerticalLines(false);
         
-        // Header Style
+        
         JTableHeader header = table.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 13));
         header.setBackground(Color.WHITE);
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(230, 230, 230)));
 
-        // --- RENDERER CUSTOM (HIGHLIGHT KUNING + FORMAT OK/X) ---
+        
         DefaultTableCellRenderer customRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, 
@@ -70,7 +70,7 @@ public class DialogBatchDetail extends JDialog {
                 
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 
-                // --- 1. LOGIKA BACKGROUND (KUNING JIKA ADA CATATAN) ---
+                
                 String followUpNote = "";
                 if (table.getColumnCount() > 9) {
                     Object noteObj = table.getValueAt(row, 9);
@@ -80,69 +80,69 @@ public class DialogBatchDetail extends JDialog {
                 if (isSelected) {
                     c.setBackground(new Color(232, 240, 254));
                 } else if (!followUpNote.isEmpty()) {
-                    c.setBackground(new Color(255, 252, 220)); // Kuning lembut
+                    c.setBackground(new Color(255, 252, 220)); 
                 } else {
                     c.setBackground(Color.WHITE);
                 }
 
-                // --- 2. LOGIKA KHUSUS KOLOM BAU(3), RASA(4), TEKSTUR(5) ---
+                
                 if (column >= 3 && column <= 5) {
                     String s = (value != null) ? value.toString() : "";
                     
-                    // Cek apakah nilainya menandakan bagus (Repository mengirim "✓")
+                    
                     boolean isOk = s.contains("✓") || s.equalsIgnoreCase("true") || s.equals("1");
                     
                     if (isOk) {
                         setText("OK");
-                        c.setForeground(new Color(39, 174, 96)); // Hijau
+                        c.setForeground(new Color(39, 174, 96)); 
                     } else {
                         setText("X");
-                        c.setForeground(new Color(192, 57, 43)); // Merah
+                        c.setForeground(new Color(192, 57, 43)); 
                     }
                     
                     setFont(new Font("Segoe UI", Font.BOLD, 14));
                     setHorizontalAlignment(JLabel.CENTER);
                 } 
                 else {
-                    // Reset untuk kolom lain (selain 3,4,5) agar tidak ikut berubah
+                    
                     if (!isSelected) c.setForeground(Color.BLACK);
                     setHorizontalAlignment(JLabel.LEFT);
-                    if(column == 6) setHorizontalAlignment(JLabel.CENTER); // AI Status Center
+                    if(column == 6) setHorizontalAlignment(JLabel.CENTER); 
                 }
                 
                 return c;
             }
         };
 
-        // --- PENGATURAN LEBAR KOLOM ---
+        
         if (table.getColumnCount() > 9) {
-            table.getColumnModel().getColumn(0).setPreferredWidth(130); // Bahan
-            table.getColumnModel().getColumn(1).setPreferredWidth(130); // Masakan
-            table.getColumnModel().getColumn(2).setPreferredWidth(100); // Vendor
+            table.getColumnModel().getColumn(0).setPreferredWidth(130); 
+            table.getColumnModel().getColumn(1).setPreferredWidth(130); 
+            table.getColumnModel().getColumn(2).setPreferredWidth(100); 
             
-            // Terapkan Renderer ke Kolom 0, 1, 2
+            
             table.getColumnModel().getColumn(0).setCellRenderer(customRenderer);
             table.getColumnModel().getColumn(1).setCellRenderer(customRenderer);
             table.getColumnModel().getColumn(2).setCellRenderer(customRenderer);
 
-            // Kolom Kecil (Bau, Rasa, Tekstur) -> Index 3, 4, 5
+            
             for (int i = 3; i <= 5; i++) {
                 table.getColumnModel().getColumn(i).setPreferredWidth(40);
                 table.getColumnModel().getColumn(i).setCellRenderer(customRenderer);
             }
             
-            // Kolom AI Status (Index 6)
+            
             table.getColumnModel().getColumn(6).setPreferredWidth(80);
             table.getColumnModel().getColumn(6).setCellRenderer(customRenderer);
             
-            // Status Akhir (Index 7)
+            
             table.getColumnModel().getColumn(7).setCellRenderer(new DefaultTableCellRenderer() {
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, 
                         boolean isSelected, boolean hasFocus, int row, int column) {
                     Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     
-                    // Cek catatan untuk highlight kuning
+                    
                     String followUpNote = "";
                     if (table.getColumnCount() > 9) {
                         Object noteObj = table.getValueAt(row, 9);
@@ -155,21 +155,27 @@ public class DialogBatchDetail extends JDialog {
                         c.setBackground(Color.WHITE);
                     }
                     
-                    String status = (String) value;
-                    if ("PASS".equals(status)) {
+                    String status = (value != null) ? value.toString() : "";
+                    
+                    
+                    if ("PASS".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status)) {
                         c.setForeground(new Color(39, 174, 96)); 
-                        setText("✔ AMAN");
+                        setText("AMAN");
+                    } else if ("RECHECK".equalsIgnoreCase(status)) {
+                        c.setForeground(new Color(230, 126, 34)); 
+                        setText("PERIKSA ULANG");
                     } else {
                         c.setForeground(new Color(192, 57, 43)); 
-                        setText("✖ DITOLAK");
+                        setText("DITOLAK");
                     }
+                    
                     setFont(new Font("Segoe UI", Font.BOLD, 12));
                     setHorizontalAlignment(JLabel.CENTER);
                     return c;
                 }
             });
             
-            // Kolom Bukti Foto (Index 8)
+            
             TableColumn colFoto = table.getColumnModel().getColumn(8);
             colFoto.setMinWidth(100);
             colFoto.setMaxWidth(100);
@@ -182,7 +188,7 @@ public class DialogBatchDetail extends JDialog {
                         boolean isSelected, boolean hasFocus, int row, int column) {
                     JLabel c = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     
-                    // Cek catatan untuk highlight kuning
+                    
                     String followUpNote = "";
                     if (table.getColumnCount() > 9) {
                         Object noteObj = table.getValueAt(row, 9);
@@ -209,7 +215,7 @@ public class DialogBatchDetail extends JDialog {
                 }
             });
             
-            // --- KOLOM CATATAN (Index 9) - TAMPILKAN SEBAGAI LINK ---
+            
             TableColumn colCatatan = table.getColumnModel().getColumn(9);
             colCatatan.setMinWidth(100);
             colCatatan.setMaxWidth(100);
@@ -224,7 +230,7 @@ public class DialogBatchDetail extends JDialog {
                     
                     String note = (value != null) ? value.toString().trim() : "";
                     
-                    // Background kuning jika ada catatan
+                    
                     if (!note.isEmpty() && !isSelected) {
                         c.setBackground(new Color(255, 252, 220));
                     } else if (!isSelected) {
@@ -246,7 +252,7 @@ public class DialogBatchDetail extends JDialog {
             });
         }
         
-        // --- EVENT LISTENER: KLIK UNTUK LIHAT FOTO & CATATAN ---
+        
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -255,7 +261,7 @@ public class DialogBatchDetail extends JDialog {
                 
                 if (row < 0) return;
                 
-                // Jika yang diklik adalah kolom 8 (Foto Path)
+                
                 if (col == 8) {
                     String path = (String) table.getValueAt(row, 8);
                     if (path != null && !path.isEmpty()) {
@@ -268,7 +274,7 @@ public class DialogBatchDetail extends JDialog {
                     }
                 }
                 
-                // Jika yang diklik adalah kolom 9 (Catatan)
+                
                 if (col == 9) {
                     Object noteObj = table.getValueAt(row, 9);
                     String note = (noteObj != null) ? noteObj.toString().trim() : "";
@@ -290,7 +296,7 @@ public class DialogBatchDetail extends JDialog {
         scrollPane.getViewport().setBackground(Color.WHITE);
         add(scrollPane, BorderLayout.CENTER);
 
-        // --- 3. FOOTER ---
+        
         JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnlFooter.setBorder(new EmptyBorder(15, 20, 15, 20));
         
@@ -322,7 +328,7 @@ public class DialogBatchDetail extends JDialog {
         add(pnlFooter, BorderLayout.SOUTH);
     }
 
-    // --- HELPER: POPUP IMAGE VIEWER ---
+    
     private void showImagePreview(String imagePath) {
         JDialog dialog = new JDialog(this, "Preview Foto Bukti", true);
         dialog.setSize(600, 500);
@@ -345,9 +351,9 @@ public class DialogBatchDetail extends JDialog {
         dialog.setVisible(true);
     }
     
-    // --- HELPER: POPUP CATATAN VIEWER ---
+    
     private void showNoteDialog(int row, String note) {
-        // Ambil info bahan dan masakan untuk header dialog
+        
         String bahan = (String) table.getValueAt(row, 0);
         String masakan = (String) table.getValueAt(row, 1);
         
@@ -356,12 +362,12 @@ public class DialogBatchDetail extends JDialog {
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout(10, 10));
         
-        // Header
+        
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(new Color(255, 252, 220));
         pnlHeader.setBorder(new EmptyBorder(15, 15, 15, 15));
         
-        JLabel lblTitle = new JLabel("📝 Catatan Inspeksi");
+        JLabel lblTitle = new JLabel("Catatan Inspeksi");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         
         JLabel lblSubtitle = new JLabel("<html><b>Bahan:</b> " + bahan + "<br><b>Masakan:</b> " + masakan + "</html>");
@@ -371,7 +377,7 @@ public class DialogBatchDetail extends JDialog {
         pnlHeader.add(lblTitle, BorderLayout.NORTH);
         pnlHeader.add(lblSubtitle, BorderLayout.CENTER);
         
-        // Content - Text Area untuk catatan
+        
         JTextArea txtNote = new JTextArea(note);
         txtNote.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         txtNote.setLineWrap(true);
@@ -387,7 +393,7 @@ public class DialogBatchDetail extends JDialog {
         pnlContent.setBorder(new EmptyBorder(10, 15, 10, 15));
         pnlContent.add(scrollNote, BorderLayout.CENTER);
         
-        // Footer - Button Close
+        
         JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.CENTER));
         pnlFooter.setBorder(new EmptyBorder(5, 15, 15, 15));
         

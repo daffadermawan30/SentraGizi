@@ -3,7 +3,7 @@ package com.sentragizi.shared.models;
 public class User {
     private int id;
     private String username;
-    private String role;     // "ADMIN" atau "INSPECTOR"
+    private String role;     
     private String fullname;
 
     public User(int id, String username, String role, String fullname) {

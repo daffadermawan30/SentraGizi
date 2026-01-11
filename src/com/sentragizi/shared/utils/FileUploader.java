@@ -13,8 +13,8 @@ public class FileUploader {
             throw new IOException("File sumber tidak ditemukan di: " + sourcePath);
         }
 
-        // 1. Tentukan Nama File Baru (Amankan dari konflik nama)
-        // Kita gunakan BATCH-UUID dan mempertahankan ekstensi file asli
+        
+        
         String originalFileName = source.getName();
         String extension = "";
         int i = originalFileName.lastIndexOf('.');
@@ -25,7 +25,7 @@ public class FileUploader {
         
         File destination = new File(destinationDir + newFileName);
         
-        // 2. Lakukan Proses Copy (Stream)
+        
         try (FileInputStream in = new FileInputStream(source);
              FileOutputStream out = new FileOutputStream(destination)) {
 
@@ -36,6 +36,6 @@ public class FileUploader {
             }
         }
         
-        return newFileName; // Kembalikan nama file baru (Contoh: "a9b1c2-d4e5.jpg")
+        return newFileName; 
     }
 }

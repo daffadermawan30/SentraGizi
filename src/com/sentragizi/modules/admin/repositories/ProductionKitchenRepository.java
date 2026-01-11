@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ProductionKitchenRepository {
     
-    // METHOD 1: Dipakai oleh PanelStage1 (Hanya yang Aktif)
+    
     public List<ProductionKitchen> getAllActiveKitchens() {
         List<ProductionKitchen> list = new ArrayList<>();
         String sql = "SELECT * FROM production_kitchens WHERE is_active = 1 ORDER BY name ASC";
@@ -21,10 +21,10 @@ public class ProductionKitchenRepository {
         return list;
     }
     
-    // METHOD 2: Dipakai oleh Admin (Semua Data: Aktif & Non-Aktif)
+    
     public List<ProductionKitchen> getAllKitchens() {
         List<ProductionKitchen> list = new ArrayList<>();
-        // Urutkan: Aktif dulu, baru nama
+        
         String sql = "SELECT * FROM production_kitchens ORDER BY is_active DESC, name ASC";
         
         try (Connection conn = DatabaseConnection.getConnection();
@@ -35,19 +35,19 @@ public class ProductionKitchenRepository {
         return list;
     }
     
-    // Helper untuk ekstrak data (Mencegah duplikasi kode)
+    
     private void extractData(ResultSet rs, List<ProductionKitchen> list) throws SQLException {
         while (rs.next()) {
             list.add(new ProductionKitchen(
                 rs.getInt("id"),
                 rs.getString("name"),
-                rs.getString("address"), // Perbaikan: Dapur pakai 'address', bukan 'location'
+                rs.getString("address"), 
                 rs.getBoolean("is_active")
             ));
         }
     }
     
-    // CREATE
+    
     public boolean save(String name, String address) {
         String sql = "INSERT INTO production_kitchens (name, address, is_active) VALUES (?, ?, 1)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -58,7 +58,7 @@ public class ProductionKitchenRepository {
         } catch (Exception e) { e.printStackTrace(); return false; }
     }
 
-    // UPDATE
+    
     public boolean update(int id, String name, String address, boolean isActive) {
         String sql = "UPDATE production_kitchens SET name=?, address=?, is_active=? WHERE id=?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -71,7 +71,7 @@ public class ProductionKitchenRepository {
         } catch (Exception e) { e.printStackTrace(); return false; }
     }
 
-    // DELETE
+    
     public boolean delete(int id) {
         String sql = "DELETE FROM production_kitchens WHERE id=?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -80,7 +80,7 @@ public class ProductionKitchenRepository {
             return ps.executeUpdate() > 0;
         } catch (Exception e) { 
             e.printStackTrace(); 
-            return false; // Gagal jika data sedang dipakai di tabel inspeksi
+            return false; 
         }
     }
 }
