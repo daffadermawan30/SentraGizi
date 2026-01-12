@@ -6,22 +6,13 @@ public class AppConfig {
 
     
     public static final String PROJECT_ROOT = System.getProperty("user.dir");
-
-    
     public static final String PYTHON_EXEC = PROJECT_ROOT + "/python_embed/python.exe";
     public static final String SCRIPT_FRESHNESS = PROJECT_ROOT + "/python_embed/main_freshness.py";
     public static final String SCRIPT_COUNTING = PROJECT_ROOT + "/python_embed/main_counting.py";
-
-    
-    
-    
     public static final String STORAGE_ROOT = PROJECT_ROOT + "/storage/";
-    
     public static final String DIR_UPLOAD_RAW = STORAGE_ROOT + "uploads/raw_materials/";
     public static final String DIR_UPLOAD_COOKED = STORAGE_ROOT + "uploads/cooked_food/";
-    public static final String DIR_QR = STORAGE_ROOT + "qr_codes/"; 
-
-    
+    public static final String DIR_QR = STORAGE_ROOT + "qr_codes/";
     public static final String DIR_ARCHIVE_RAW = STORAGE_ROOT + "archive/raw_materials/";
     public static final String DIR_ARCHIVE_COOKED = STORAGE_ROOT + "archive/cooked_food/";
     public static final String DIR_ARCHIVE_QR = STORAGE_ROOT + "archive/qr_codes/";

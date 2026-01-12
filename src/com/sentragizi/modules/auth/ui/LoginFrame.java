@@ -9,7 +9,6 @@ import com.sentragizi.shared.utils.SessionManager;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -19,7 +18,6 @@ public class LoginFrame extends JFrame {
     private JPasswordField txtPassword;
     private JButton btnLogin;
 
-    
     private final Color BG_COLOR = new Color(240, 242, 245);     
     private final Color CARD_COLOR = Color.WHITE;                
     private final Color PRIMARY_COLOR = new Color(44, 62, 80);   
@@ -32,13 +30,12 @@ public class LoginFrame extends JFrame {
     private void initUI() {
         setTitle("Login - SentraGizi");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(450, 550);
+        setSize(450, 580); // Ukuran tinggi ditambah sedikit untuk footer
         setLocationRelativeTo(null); 
         
-        
+        // Panel utama dengan GridBagLayout agar card tetap di tengah
         JPanel pnlMain = new JPanel(new GridBagLayout()); 
         pnlMain.setBackground(BG_COLOR);
-        
         
         JPanel pnlCard = new JPanel();
         pnlCard.setLayout(new BoxLayout(pnlCard, BoxLayout.Y_AXIS));
@@ -49,7 +46,6 @@ public class LoginFrame extends JFrame {
         ));
         pnlCard.setPreferredSize(new Dimension(350, 400));
 
-        
         JLabel lblTitle = new JLabel("SENTRAGIZI");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitle.setForeground(PRIMARY_COLOR);
@@ -60,13 +56,9 @@ public class LoginFrame extends JFrame {
         lblSubtitle.setForeground(Color.GRAY);
         lblSubtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        
-        
-        
         JLabel lblUser = new JLabel("Username");
         lblUser.setAlignmentX(Component.LEFT_ALIGNMENT);
         lblUser.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        
         
         txtUsername = new JTextField();
         txtUsername.setPreferredSize(new Dimension(300, 40));
@@ -77,12 +69,10 @@ public class LoginFrame extends JFrame {
             new EmptyBorder(5, 10, 5, 10)
         ));
 
-        
         JLabel lblPass = new JLabel("Password");
         lblPass.setAlignmentX(Component.LEFT_ALIGNMENT);
         lblPass.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
-        
         txtPassword = new JPasswordField();
         txtPassword.setPreferredSize(new Dimension(300, 40));
         txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
@@ -91,7 +81,6 @@ public class LoginFrame extends JFrame {
             BorderFactory.createLineBorder(new Color(200, 200, 200)),
             new EmptyBorder(5, 10, 5, 10)
         ));
-        
         
         txtPassword.addKeyListener(new KeyAdapter() {
             @Override
@@ -102,7 +91,6 @@ public class LoginFrame extends JFrame {
             }
         });
 
-        
         btnLogin = new JButton("MASUK / LOGIN");
         btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
@@ -113,12 +101,10 @@ public class LoginFrame extends JFrame {
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogin.addActionListener(e -> actionLogin());
 
-        
         pnlCard.add(Box.createVerticalStrut(10)); 
         pnlCard.add(lblTitle);
         pnlCard.add(lblSubtitle);
         pnlCard.add(Box.createVerticalStrut(40)); 
-        
         
         JPanel pnlUserLabel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         pnlUserLabel.setBackground(CARD_COLOR);
@@ -139,11 +125,21 @@ public class LoginFrame extends JFrame {
         pnlCard.add(Box.createVerticalStrut(30)); 
         pnlCard.add(btnLogin);
 
-        
         pnlMain.add(pnlCard);
+
+        // FOOTER COPYRIGHT
+        JLabel lblCopyright = new JLabel("© 2026 SentraGizi - Daffa Dermawan", SwingConstants.CENTER);
+        lblCopyright.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        lblCopyright.setForeground(Color.GRAY);
+        lblCopyright.setBorder(new EmptyBorder(10, 0, 10, 0));
+
+        // Panel Pembungkus Final
+        JPanel pnlFinal = new JPanel(new BorderLayout());
+        pnlFinal.setBackground(BG_COLOR);
+        pnlFinal.add(pnlMain, BorderLayout.CENTER);
+        pnlFinal.add(lblCopyright, BorderLayout.SOUTH);
         
-        
-        setContentPane(pnlMain);
+        setContentPane(pnlFinal);
     }
 
     private void actionLogin() {
@@ -155,15 +151,12 @@ public class LoginFrame extends JFrame {
             return;
         }
         
-        
         btnLogin.setText("Memproses...");
         btnLogin.setEnabled(false);
 
-        
         new SwingWorker<Boolean, Void>() {
             @Override
             protected Boolean doInBackground() throws Exception {
-                
                 Thread.sleep(300); 
                 AuthService auth = new AuthService();
                 return auth.login(u, p);
@@ -195,8 +188,6 @@ public class LoginFrame extends JFrame {
         User currentUser = SessionManager.getCurrentUser();
         String role = currentUser.getRole();
         
-        
-        
         if ("ADMIN".equalsIgnoreCase(role)) {
             new AdminMainFrame().setVisible(true);
         } else if ("INSPECTOR".equalsIgnoreCase(role)) {
@@ -208,5 +199,4 @@ public class LoginFrame extends JFrame {
         
         this.dispose(); 
     }
-
 }

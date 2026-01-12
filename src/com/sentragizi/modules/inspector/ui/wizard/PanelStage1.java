@@ -44,26 +44,26 @@ public class PanelStage1 extends JPanel {
     private JComboBox<String> comboDistributionTarget;
     private JTable tblChecklist;
     private DefaultTableModel tableModel;
-    
+
     private JLabel lblImagePreview;
-    private JLabel lblSelectedItem; 
+    private JLabel lblSelectedItem;
     private JLabel lblDetailSubtitle;
     private JTextArea txtAiLog;
     private JTextArea txtNotes;
     private JButton btnUploadFoto;
     private JButton btnSimpan;
-    private JButton btnBatal; 
-    
+    private JButton btnBatal;
+
     private final Color PRIMARY_COLOR = new Color(52, 152, 219);
     private final Color PRIMARY_HOVER = new Color(41, 128, 185);
     private final Color SUCCESS_COLOR = new Color(46, 204, 113);
     private final Color SUCCESS_HOVER = new Color(39, 174, 96);
-    private final Color DANGER_COLOR = new Color(231, 76, 60);  
+    private final Color DANGER_COLOR = new Color(231, 76, 60);
     private final Color DANGER_HOVER = new Color(192, 57, 43);
     private final Color BG_COLOR = new Color(245, 247, 250);
     private final Color TEXT_DARK = new Color(44, 62, 80);
     private final Color TEXT_MUTED = new Color(127, 140, 141);
-    
+
     private final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 16);
     private final Font FONT_HEADER = new Font("Segoe UI", Font.BOLD, 13);
     private final Font FONT_NORMAL = new Font("Segoe UI", Font.PLAIN, 13);
@@ -73,7 +73,7 @@ public class PanelStage1 extends JPanel {
     private List<DistributionTarget> targetList;
     private String currentBatchUuid;
     private int currentMenuId = 0;
-    
+
     private boolean isTableSelectionChanging = false;
 
     public PanelStage1() {
@@ -88,21 +88,19 @@ public class PanelStage1 extends JPanel {
         setLayout(new BorderLayout(0, 0));
         setBackground(BG_COLOR);
 
-        
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(Color.WHITE);
         pnlHeader.setBorder(new CompoundBorder(
-            new MatteBorder(0, 0, 1, 0, new Color(220, 220, 220)),
-            new EmptyBorder(15, 25, 15, 25)
+                new MatteBorder(0, 0, 1, 0, new Color(220, 220, 220)),
+                new EmptyBorder(15, 25, 15, 25)
         ));
 
-        
         JPanel pnlInputs = new JPanel(new GridBagLayout());
         pnlInputs.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 0, 5, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        
+
         JLabel lblMenu = createFormLabel("Target Menu");
         JLabel lblKitchen = createFormLabel("Dapur Produksi");
         JLabel lblTarget = createFormLabel("Tujuan Distribusi");
@@ -112,30 +110,47 @@ public class PanelStage1 extends JPanel {
         comboProductionKitchen = createStyledComboBox();
         comboDistributionTarget = createStyledComboBox();
 
-        gbc.gridx=0; gbc.gridy=0; gbc.weightx=0; pnlInputs.add(lblMenu, gbc);
-        gbc.gridx=1; gbc.gridy=0; gbc.weightx=1; pnlInputs.add(comboMenu, gbc);
-        
-        gbc.gridx=2; gbc.gridy=0; gbc.weightx=0; pnlInputs.add(lblKitchen, gbc);
-        gbc.gridx=3; gbc.gridy=0; gbc.weightx=1; pnlInputs.add(comboProductionKitchen, gbc);
-        
-        gbc.gridx=4; gbc.gridy=0; gbc.weightx=0; pnlInputs.add(lblTarget, gbc);
-        gbc.gridx=5; gbc.gridy=0; gbc.weightx=1; pnlInputs.add(comboDistributionTarget, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0;
+        pnlInputs.add(lblMenu, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        pnlInputs.add(comboMenu, gbc);
 
-        
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.weightx = 0;
+        pnlInputs.add(lblKitchen, gbc);
+        gbc.gridx = 3;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        pnlInputs.add(comboProductionKitchen, gbc);
+
+        gbc.gridx = 4;
+        gbc.gridy = 0;
+        gbc.weightx = 0;
+        pnlInputs.add(lblTarget, gbc);
+        gbc.gridx = 5;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        pnlInputs.add(comboDistributionTarget, gbc);
+
         JPanel pnlBatch = new JPanel(new BorderLayout());
         pnlBatch.setBackground(new Color(236, 240, 241));
         pnlBatch.setBorder(new LineBorder(new Color(189, 195, 199), 1, true));
-        
+
         JLabel lblBatchTitle = new JLabel(" BATCH ID ");
         lblBatchTitle.setFont(new Font("Segoe UI", Font.BOLD, 10));
         lblBatchTitle.setForeground(TEXT_MUTED);
         lblBatchTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        
+
         JLabel lblBatchCode = new JLabel(" " + currentBatchUuid.substring(0, 8).toUpperCase() + " ");
         lblBatchCode.setFont(new Font("Monospaced", Font.BOLD, 16));
         lblBatchCode.setForeground(TEXT_DARK);
         lblBatchCode.setHorizontalAlignment(SwingConstants.CENTER);
-        
+
         pnlBatch.add(lblBatchTitle, BorderLayout.NORTH);
         pnlBatch.add(lblBatchCode, BorderLayout.CENTER);
         pnlBatch.setPreferredSize(new Dimension(100, 45));
@@ -144,9 +159,8 @@ public class PanelStage1 extends JPanel {
         pnlHeader.add(pnlBatch, BorderLayout.EAST);
         add(pnlHeader, BorderLayout.NORTH);
 
-        
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setResizeWeight(0.65); 
+        splitPane.setResizeWeight(0.65);
         splitPane.setDividerSize(3);
         splitPane.setBorder(null);
         splitPane.setBackground(BG_COLOR);
@@ -156,14 +170,14 @@ public class PanelStage1 extends JPanel {
 
         add(splitPane, BorderLayout.CENTER);
     }
-    
+
     private JLabel createFormLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lbl.setForeground(TEXT_MUTED);
         return lbl;
     }
-    
+
     private JComboBox<String> createStyledComboBox() {
         JComboBox<String> cmb = new JComboBox<>();
         cmb.setFont(FONT_NORMAL);
@@ -177,12 +191,12 @@ public class PanelStage1 extends JPanel {
         pnl.setBackground(BG_COLOR);
         pnl.setBorder(new EmptyBorder(15, 20, 20, 5));
 
-        setupTable(); 
+        setupTable();
 
         JScrollPane scroll = new JScrollPane(tblChecklist);
         scroll.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
         scroll.getViewport().setBackground(Color.WHITE);
-        
+
         JLabel lblTitle = new JLabel("Daftar Bahan & Parameter Kualitas");
         lblTitle.setFont(FONT_TITLE);
         lblTitle.setForeground(TEXT_DARK);
@@ -197,107 +211,115 @@ public class PanelStage1 extends JPanel {
         JPanel pnl = new JPanel(new GridBagLayout());
         pnl.setBackground(Color.WHITE);
         pnl.setBorder(new CompoundBorder(
-            new MatteBorder(0, 1, 0, 0, new Color(220, 220, 220)),
-            new EmptyBorder(20, 20, 20, 20)
+                new MatteBorder(0, 1, 0, 0, new Color(220, 220, 220)),
+                new EmptyBorder(20, 20, 20, 20)
         ));
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0; 
-        
-        
+        gbc.weightx = 1.0;
+
         JPanel pnlDetailHeader = new JPanel(new BorderLayout());
         pnlDetailHeader.setBackground(Color.WHITE);
-        
+
         lblSelectedItem = new JLabel("Pilih item di tabel...", SwingConstants.LEFT);
         lblSelectedItem.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblSelectedItem.setForeground(TEXT_DARK);
-        
+
         lblDetailSubtitle = new JLabel("Detail Inspeksi & Bukti Foto");
         lblDetailSubtitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         lblDetailSubtitle.setForeground(TEXT_MUTED);
-        
+
         pnlDetailHeader.add(lblSelectedItem, BorderLayout.NORTH);
         pnlDetailHeader.add(lblDetailSubtitle, BorderLayout.CENTER);
-        
-        gbc.gridx = 0; gbc.gridy = 0; gbc.weighty = 0.0;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weighty = 0.0;
         gbc.insets = new Insets(0, 0, 15, 0);
         pnl.add(pnlDetailHeader, gbc);
 
-        
         lblImagePreview = new JLabel("Tidak ada foto", SwingConstants.CENTER);
         lblImagePreview.setOpaque(true);
         lblImagePreview.setBackground(new Color(245, 245, 245));
         lblImagePreview.setForeground(Color.GRAY);
         lblImagePreview.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230), 1));
-        
-        gbc.gridy = 1; gbc.weighty = 0.4;
+
+        gbc.gridy = 1;
+        gbc.weighty = 0.4;
         gbc.insets = new Insets(0, 0, 10, 0);
         pnl.add(lblImagePreview, gbc);
 
-        
         btnUploadFoto = createStyledButton("Ambil / Upload Foto & Cek AI", UIManager.getIcon("FileView.floppyDriveIcon"), PRIMARY_COLOR, PRIMARY_HOVER);
         btnUploadFoto.addActionListener(this::actionUploadAndCheckAI);
-        gbc.gridy = 2; gbc.weighty = 0.0;
+        gbc.gridy = 2;
+        gbc.weighty = 0.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(0, 0, 20, 0);
         pnl.add(btnUploadFoto, gbc);
 
-        
         JLabel lblLogTitle = new JLabel("AI Diagnostics Log");
         lblLogTitle.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lblLogTitle.setForeground(TEXT_DARK);
-        
+
         txtAiLog = new JTextArea();
         txtAiLog.setEditable(false);
         txtAiLog.setFont(new Font("Consolas", Font.PLAIN, 11));
-        txtAiLog.setBackground(new Color(33, 37, 43)); 
-        txtAiLog.setForeground(new Color(152, 195, 121)); 
+        txtAiLog.setBackground(new Color(33, 37, 43));
+        txtAiLog.setForeground(new Color(152, 195, 121));
         txtAiLog.setMargin(new Insets(5, 5, 5, 5));
-        
+
         JScrollPane scrollLog = new JScrollPane(txtAiLog);
         scrollLog.setBorder(null);
-        scrollLog.setPreferredSize(new Dimension(0, 120)); 
-        
+        scrollLog.setPreferredSize(new Dimension(0, 120));
+
         JPanel pnlLogWrapper = new JPanel(new BorderLayout());
         pnlLogWrapper.setBorder(new LineBorder(new Color(220, 220, 220), 1));
         pnlLogWrapper.add(lblLogTitle, BorderLayout.NORTH);
         pnlLogWrapper.add(scrollLog, BorderLayout.CENTER);
-        
-        gbc.gridy = 3; gbc.weighty = 0.3; 
-        gbc.insets = new Insets(0, 0, 15, 0); 
+
+        gbc.gridy = 3;
+        gbc.weighty = 0.3;
+        gbc.insets = new Insets(0, 0, 15, 0);
         pnl.add(scrollLog, gbc);
 
-        
         JLabel lblNotes = new JLabel("Catatan Tambahan (Otomatis RECHECK jika diisi)");
         lblNotes.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lblNotes.setForeground(TEXT_DARK);
-        
+
         txtNotes = new JTextArea();
         txtNotes.setFont(FONT_NORMAL);
         txtNotes.setLineWrap(true);
         txtNotes.setWrapStyleWord(true);
         txtNotes.setBorder(new EmptyBorder(5, 5, 5, 5));
         txtNotes.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { syncNoteToTable(); }
-            public void removeUpdate(DocumentEvent e) { syncNoteToTable(); }
-            public void changedUpdate(DocumentEvent e) { syncNoteToTable(); }
+            public void insertUpdate(DocumentEvent e) {
+                syncNoteToTable();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                syncNoteToTable();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                syncNoteToTable();
+            }
         });
-        
+
         JScrollPane scrollNote = new JScrollPane(txtNotes);
         scrollNote.setBorder(new LineBorder(new Color(200, 200, 200)));
         scrollNote.setPreferredSize(new Dimension(0, 80));
-        
+
         JPanel pnlNoteWrapper = new JPanel(new BorderLayout(0, 5));
         pnlNoteWrapper.setBackground(Color.WHITE);
         pnlNoteWrapper.add(lblNotes, BorderLayout.NORTH);
         pnlNoteWrapper.add(scrollNote, BorderLayout.CENTER);
 
-        gbc.gridy = 4; gbc.weighty = 0.2; 
+        gbc.gridy = 4;
+        gbc.weighty = 0.2;
         gbc.insets = new Insets(0, 0, 20, 0);
         pnl.add(pnlNoteWrapper, gbc);
 
-        
         JPanel pnlButtons = new JPanel(new GridLayout(1, 2, 10, 0));
         pnlButtons.setBackground(Color.WHITE);
 
@@ -308,60 +330,72 @@ public class PanelStage1 extends JPanel {
         btnSimpan = createStyledButton("SIMPAN & SELESAI", null, SUCCESS_COLOR, SUCCESS_HOVER);
         btnSimpan.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnSimpan.addActionListener(this::actionSaveAll);
-        
+
         pnlButtons.add(btnBatal);
         pnlButtons.add(btnSimpan);
-        
-        gbc.gridy = 5; gbc.weighty = 0.0;
-        gbc.insets = new Insets(0, 0, 0, 0); 
+
+        gbc.gridy = 5;
+        gbc.weighty = 0.0;
+        gbc.insets = new Insets(0, 0, 0, 0);
         pnl.add(pnlButtons, gbc);
 
         return pnl;
     }
 
     private void syncNoteToTable() {
-        if (isTableSelectionChanging) return; 
+        if (isTableSelectionChanging) {
+            return;
+        }
         int row = tblChecklist.getSelectedRow();
         if (row != -1) {
-            tableModel.setValueAt(txtNotes.getText(), row, 10); 
-            validateRow(row); 
+            tableModel.setValueAt(txtNotes.getText(), row, 10);
+            validateRow(row);
         }
     }
 
     private JButton createStyledButton(String text, Icon icon, Color bg, Color hoverBg) {
         JButton btn = new JButton(text);
-        if (icon != null) btn.setIcon(icon);
+        if (icon != null) {
+            btn.setIcon(icon);
+        }
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btn.setBackground(bg);
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        
+
         btn.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { btn.setBackground(hoverBg); }
-            public void mouseExited(MouseEvent e) { btn.setBackground(bg); }
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(hoverBg);
+            }
+
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(bg);
+            }
         });
         return btn;
     }
 
     private void setupTable() {
         String[] columns = {
-            "Nama Masakan", "Bahan Baku", "Vendor Suplier", "Bau", "Rasa", "Tekstur", 
-            "Analisa AI", "Status", "Path", "CompID", "Catatan" 
+            "Nama Masakan", "Bahan Baku", "Vendor Suplier", "Bau", "Rasa", "Tekstur",
+            "Analisa AI", "Status", "Path", "CompID", "Catatan"
         };
 
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex >= 3 && columnIndex <= 5) return Boolean.class;
+                if (columnIndex >= 3 && columnIndex <= 5) {
+                    return Boolean.class;
+                }
                 return String.class;
             }
+
             @Override
             public boolean isCellEditable(int row, int col) {
-                
-                return (col == 2) || (col >= 3 && col <= 5) || col == 10; 
+
+                return (col == 2) || (col >= 3 && col <= 5) || col == 10;
             }
         };
 
@@ -375,7 +409,7 @@ public class PanelStage1 extends JPanel {
                 return c;
             }
         };
-        
+
         tblChecklist.setRowHeight(50);
         tblChecklist.setFont(FONT_NORMAL);
         tblChecklist.setShowVerticalLines(false);
@@ -398,14 +432,14 @@ public class PanelStage1 extends JPanel {
             }
         });
 
-        
         JComboBox<String> comboVendor = new JComboBox<>();
         List<Vendor> vendors = new VendorRepository().getAllVendors();
         comboVendor.addItem("- Pilih -");
-        for (Vendor v : vendors) comboVendor.addItem(v.getId() + " - " + v.getName());
+        for (Vendor v : vendors) {
+            comboVendor.addItem(v.getId() + " - " + v.getName());
+        }
         tblChecklist.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(comboVendor));
 
-        
         tblChecklist.getColumnModel().getColumn(7).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -413,15 +447,15 @@ public class PanelStage1 extends JPanel {
                 String status = (String) value;
                 c.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 c.setHorizontalAlignment(CENTER);
-                
+
                 if ("PASS".equals(status)) {
-                    c.setForeground(new Color(39, 174, 96)); 
+                    c.setForeground(new Color(39, 174, 96));
                     c.setText("PASS");
                 } else if ("FAIL".equals(status)) {
-                    c.setForeground(new Color(192, 57, 43)); 
+                    c.setForeground(new Color(192, 57, 43));
                     c.setText("FAIL");
                 } else if ("RECHECK".equals(status)) {
-                    c.setForeground(new Color(230, 126, 34)); 
+                    c.setForeground(new Color(230, 126, 34));
                     c.setText("RECHECK");
                 } else {
                     c.setForeground(Color.GRAY);
@@ -430,40 +464,42 @@ public class PanelStage1 extends JPanel {
             }
         });
 
-        
         tblChecklist.getColumnModel().getColumn(1).setPreferredWidth(150);
         tblChecklist.getColumnModel().getColumn(2).setPreferredWidth(120);
         tblChecklist.getColumnModel().getColumn(3).setPreferredWidth(50);
         tblChecklist.getColumnModel().getColumn(4).setPreferredWidth(50);
         tblChecklist.getColumnModel().getColumn(5).setPreferredWidth(50);
 
-        
-        hideColumn(0); 
-        hideColumn(8); 
-        hideColumn(9); 
-        hideColumn(10); 
+        hideColumn(0);
+        hideColumn(8);
+        hideColumn(9);
+        hideColumn(10);
 
         tableModel.addTableModelListener(e -> {
             if (e.getType() == javax.swing.event.TableModelEvent.UPDATE) {
                 int row = e.getFirstRow();
                 int col = e.getColumn();
                 if (row >= 0 && (col == 3 || col == 4 || col == 5)) {
-                    validateRow(row); 
+                    validateRow(row);
                 }
             }
         });
     }
-    
+
     private void hideColumn(int index) {
         TableColumn col = tblChecklist.getColumnModel().getColumn(index);
-        col.setMinWidth(0); col.setMaxWidth(0); col.setWidth(0);
+        col.setMinWidth(0);
+        col.setMaxWidth(0);
+        col.setWidth(0);
     }
 
     private void loadMenus() {
         menuList = new MenuRepository().getAllMenus();
         comboMenu.removeAllItems();
         comboMenu.addItem("- Pilih Menu Masakan -");
-        for (Menu m : menuList) comboMenu.addItem(m.getName());
+        for (Menu m : menuList) {
+            comboMenu.addItem(m.getName());
+        }
     }
 
     private void loadProductionKitchens() {
@@ -471,7 +507,8 @@ public class PanelStage1 extends JPanel {
         comboProductionKitchen.removeAllItems();
         comboProductionKitchen.addItem("- Pilih Dapur -");
         for (ProductionKitchen k : kitchenList) {
-            comboProductionKitchen.addItem(k.getId() + " - " + k.getName());
+            // Hapus k.getId() + " - "
+            comboProductionKitchen.addItem(k.getName());
         }
     }
 
@@ -480,7 +517,8 @@ public class PanelStage1 extends JPanel {
         comboDistributionTarget.removeAllItems();
         comboDistributionTarget.addItem("- Pilih Tujuan -");
         for (DistributionTarget t : targetList) {
-            comboDistributionTarget.addItem(t.getId() + " - " + t.getName() + " [" + t.getType() + "]");
+            // Hapus t.getId() + " - "
+            comboDistributionTarget.addItem(t.getName() + " [" + t.getType() + "]");
         }
     }
 
@@ -498,12 +536,12 @@ public class PanelStage1 extends JPanel {
             Menu selected = menuList.get(idx - 1);
             currentMenuId = selected.getId();
             List<MenuComponent> comps = new MenuRepository().getComponentsByMenuId(currentMenuId);
-            
+
             for (MenuComponent c : comps) {
                 if (c.isNeedsRawCheck()) {
                     tableModel.addRow(new Object[]{
-                        c.getComponentName(), c.getRawMaterialName(), "- Pilih -", 
-                        false, false, false, "-", "FAIL", "", c.getId(), "" 
+                        c.getComponentName(), c.getRawMaterialName(), "- Pilih -",
+                        false, false, false, "-", "FAIL", "", c.getId(), ""
                     });
                 }
             }
@@ -511,24 +549,28 @@ public class PanelStage1 extends JPanel {
     }
 
     private void updatePanelInfo(int row) {
-        isTableSelectionChanging = true; 
+        isTableSelectionChanging = true;
 
         String itemName = tableModel.getValueAt(row, 1).toString();
         String path = tableModel.getValueAt(row, 8).toString();
-        
+
         Object noteObj = tableModel.getValueAt(row, 10);
         txtNotes.setText(noteObj != null ? noteObj.toString() : "");
-        
+
         lblSelectedItem.setText(itemName);
         lblDetailSubtitle.setText("Bahan Baku untuk " + tableModel.getValueAt(row, 0));
-        
+
         File imgFile = new File(path);
         if (path != null && !path.isEmpty() && imgFile.exists()) {
             ImageIcon icon = new ImageIcon(path);
             int w = lblImagePreview.getWidth();
             int h = lblImagePreview.getHeight();
-            if (w <= 0) w = 300; 
-            if (h <= 0) h = 200; 
+            if (w <= 0) {
+                w = 300;
+            }
+            if (h <= 0) {
+                h = 200;
+            }
             Image img = icon.getImage().getScaledInstance(Math.min(w, 400), Math.min(h, 300), Image.SCALE_SMOOTH);
             lblImagePreview.setIcon(new ImageIcon(img));
             lblImagePreview.setText("");
@@ -536,8 +578,8 @@ public class PanelStage1 extends JPanel {
             lblImagePreview.setIcon(null);
             lblImagePreview.setText("Belum ada foto");
         }
-        
-        isTableSelectionChanging = false; 
+
+        isTableSelectionChanging = false;
     }
 
     private void actionUploadAndCheckAI(ActionEvent e) {
@@ -550,18 +592,18 @@ public class PanelStage1 extends JPanel {
         JFileChooser fc = new JFileChooser();
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File sourceFile = fc.getSelectedFile();
-            
+
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            
+
             try {
                 String newFileName = FileUploader.copyFile(sourceFile.getAbsolutePath(), AppConfig.DIR_UPLOAD_RAW);
                 String savedPath = AppConfig.DIR_UPLOAD_RAW + newFileName;
-                
+
                 tableModel.setValueAt(savedPath, row, 8);
                 updatePanelInfo(row);
-                
+
                 runAiCheck(tableModel.getValueAt(row, 1).toString(), savedPath, row);
-                
+
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Gagal mengupload foto: " + ex.getMessage());
                 ex.printStackTrace();
@@ -574,19 +616,21 @@ public class PanelStage1 extends JPanel {
     private void runAiCheck(String itemName, String imagePath, int row) {
         txtAiLog.setText("> Memulai analisis " + itemName + "...\n> Memuat model AI...");
         String modelName = itemName.toLowerCase().replace(" ", "_");
-        
+
         new SwingWorker<String, Void>() {
             @Override
             protected String doInBackground() throws Exception {
                 ProcessBuilder pb = new ProcessBuilder(
-                    AppConfig.PYTHON_EXEC, AppConfig.SCRIPT_FRESHNESS, modelName, imagePath
+                        AppConfig.PYTHON_EXEC, AppConfig.SCRIPT_FRESHNESS, modelName, imagePath
                 );
                 pb.redirectErrorStream(true);
                 Process p = pb.start();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 StringBuilder sb = new StringBuilder();
                 String line;
-                while ((line = reader.readLine()) != null) sb.append(line).append("\n");
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
                 return sb.toString();
             }
 
@@ -595,24 +639,24 @@ public class PanelStage1 extends JPanel {
                 try {
                     String result = get().trim();
                     txtAiLog.append("> Raw Output: " + result + "\n");
-                    
+
                     if (result.contains("Traceback") || result.contains("ModuleNotFoundError") || result.contains("Error")) {
                         tableModel.setValueAt("ERROR", row, 6);
                         txtAiLog.append("> ⚠️ SYSTEM ERROR: Script Python Bermasalah.\n");
-                        validateRow(row); 
+                        validateRow(row);
                         return;
                     }
 
-                    boolean isFresh = result.toLowerCase().contains("pass") || 
-                                      result.toLowerCase().contains("segar") || 
-                                      result.toLowerCase().contains("fresh");
-                    
+                    boolean isFresh = result.toLowerCase().contains("pass")
+                            || result.toLowerCase().contains("segar")
+                            || result.toLowerCase().contains("fresh");
+
                     if (isFresh) {
-                         tableModel.setValueAt("Segar (AI)", row, 6);
-                         txtAiLog.append("> HASIL: SEGAR -> (Saran: PASS)\n");
+                        tableModel.setValueAt("Segar (AI)", row, 6);
+                        txtAiLog.append("> HASIL: SEGAR -> (Saran: PASS)\n");
                     } else {
-                         tableModel.setValueAt("Busuk (AI)", row, 6);
-                         txtAiLog.append("> HASIL: BUSUK -> (Saran: FAIL)\n");
+                        tableModel.setValueAt("Busuk (AI)", row, 6);
+                        txtAiLog.append("> HASIL: BUSUK -> (Saran: FAIL)\n");
                     }
                     validateRow(row);
                 } catch (Exception ex) {
@@ -622,52 +666,49 @@ public class PanelStage1 extends JPanel {
             }
         }.execute();
     }
-    
-    
+
     private void validateRow(int row) {
         Object noteObj = tableModel.getValueAt(row, 10);
         String note = (noteObj != null) ? noteObj.toString().trim() : "";
 
-        
         if (!note.isEmpty()) {
             tableModel.setValueAt("RECHECK", row, 7);
-            return; 
+            return;
         }
 
-        
         boolean bau = Boolean.TRUE.equals(tableModel.getValueAt(row, 3));
         boolean rasa = Boolean.TRUE.equals(tableModel.getValueAt(row, 4));
         boolean tekstur = Boolean.TRUE.equals(tableModel.getValueAt(row, 5));
         Object aiObj = tableModel.getValueAt(row, 6);
         String aiResult = (aiObj != null) ? aiObj.toString() : "-";
-        
+
         boolean aiPass = aiResult.toLowerCase().contains("segar") || aiResult.toLowerCase().contains("pass");
-        
+
         if (bau && rasa && tekstur && aiPass) {
             tableModel.setValueAt("PASS", row, 7);
         } else {
             tableModel.setValueAt("FAIL", row, 7);
         }
     }
-    
+
     private void actionBatal() {
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Batalkan inspeksi ini? Semua data input akan hilang.", 
-            "Konfirmasi Pembatalan", 
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE);
-            
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Batalkan inspeksi ini? Semua data input akan hilang.",
+                "Konfirmasi Pembatalan",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
         if (confirm == JOptionPane.YES_OPTION) {
             resetFormState();
-            
+
             Container parent = getParent();
             if (parent != null && parent.getLayout() instanceof CardLayout) {
                 CardLayout layout = (CardLayout) parent.getLayout();
-                layout.show(parent, "QUEUE"); 
+                layout.show(parent, "QUEUE");
             }
         }
     }
-    
+
     private void resetFormState() {
         tableModel.setRowCount(0);
         comboMenu.setSelectedIndex(0);
@@ -682,106 +723,109 @@ public class PanelStage1 extends JPanel {
     }
 
     private void actionSaveAll(ActionEvent e) {
-        
+
         if (tblChecklist.isEditing()) {
             tblChecklist.getCellEditor().stopCellEditing();
         }
 
-        
-        if (currentMenuId == 0) { JOptionPane.showMessageDialog(this, "Pilih menu terlebih dahulu!"); return; }
-        if (comboProductionKitchen.getSelectedIndex() == 0) { JOptionPane.showMessageDialog(this, "Pilih Dapur Produksi terlebih dahulu!"); return; }
-        if (comboDistributionTarget.getSelectedIndex() == 0) { JOptionPane.showMessageDialog(this, "Pilih Tujuan Distribusi terlebih dahulu!"); return; }
-        
-        
+        if (currentMenuId == 0) {
+            JOptionPane.showMessageDialog(this, "Pilih menu terlebih dahulu!");
+            return;
+        }
+        if (comboProductionKitchen.getSelectedIndex() == 0) {
+            JOptionPane.showMessageDialog(this, "Pilih Dapur Produksi terlebih dahulu!");
+            return;
+        }
+        if (comboDistributionTarget.getSelectedIndex() == 0) {
+            JOptionPane.showMessageDialog(this, "Pilih Tujuan Distribusi terlebih dahulu!");
+            return;
+        }
+
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             if (tableModel.getValueAt(i, 2).toString().equals("- Pilih -")) {
-                JOptionPane.showMessageDialog(this, "Baris " + (i+1) + ": Vendor belum dipilih!");
+                JOptionPane.showMessageDialog(this, "Baris " + (i + 1) + ": Vendor belum dipilih!");
                 return;
             }
             if (tableModel.getValueAt(i, 8).toString().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Baris " + (i+1) + ": Foto belum diupload!");
+                JOptionPane.showMessageDialog(this, "Baris " + (i + 1) + ": Foto belum diupload!");
                 return;
             }
         }
-        
-        
-        String kitchenStr = comboProductionKitchen.getSelectedItem().toString();
-        int kitchenId = Integer.parseInt(kitchenStr.split(" - ")[0]);
 
-        String targetStr = comboDistributionTarget.getSelectedItem().toString();
-        int targetId = Integer.parseInt(targetStr.split(" - ")[0]);
+        int kitchenIdx = comboProductionKitchen.getSelectedIndex();
+        int kitchenId = kitchenList.get(kitchenIdx - 1).getId(); // -1 karena index 0 adalah placeholder
+
+        int targetIdx = comboDistributionTarget.getSelectedIndex();
+        int targetId = targetList.get(targetIdx - 1).getId(); // -1 karena index 0 adalah placeholder
 
         InspectionRepository repo = new InspectionRepository();
         User currentUser = SessionManager.getCurrentUser();
-        int userId = (currentUser != null) ? currentUser.getId() : 1; 
+        int userId = (currentUser != null) ? currentUser.getId() : 1;
 
-        
-        long inspectionId = repo.insertInspectionHeader(currentBatchUuid, currentMenuId, userId, kitchenId, targetId); 
-        
+        long inspectionId = repo.insertInspectionHeader(currentBatchUuid, currentMenuId, userId, kitchenId, targetId);
+
         if (inspectionId == -1) {
             JOptionPane.showMessageDialog(this, "Database Error: Gagal membuat batch.");
             return;
         }
 
-        
         boolean allSaved = true;
         int passCount = 0;
-        int recheckCount = 0; 
+        int recheckCount = 0;
         int totalRows = tableModel.getRowCount();
 
         for (int i = 0; i < totalRows; i++) {
-            
-            String vendorStr = tableModel.getValueAt(i, 2).toString(); 
+
+            String vendorStr = tableModel.getValueAt(i, 2).toString();
             int vendorId = Integer.parseInt(vendorStr.split(" - ")[0]);
-            
+
             boolean bau = Boolean.TRUE.equals(tableModel.getValueAt(i, 3));
             boolean rasa = Boolean.TRUE.equals(tableModel.getValueAt(i, 4));
             boolean tekstur = Boolean.TRUE.equals(tableModel.getValueAt(i, 5));
             String aiRes = (tableModel.getValueAt(i, 6) != null) ? tableModel.getValueAt(i, 6).toString() : "-";
-            
-            String status = tableModel.getValueAt(i, 7).toString(); 
-            String path = tableModel.getValueAt(i, 8).toString();
-            
-            Object noteObj = tableModel.getValueAt(i, 10);
-            String note = (noteObj != null) ? noteObj.toString() : ""; 
-            
-            int compId = 0;
-            try { compId = Integer.parseInt(tableModel.getValueAt(i, 9).toString()); } catch(Exception ex){}
 
-            
+            String status = tableModel.getValueAt(i, 7).toString();
+            String path = tableModel.getValueAt(i, 8).toString();
+
+            Object noteObj = tableModel.getValueAt(i, 10);
+            String note = (noteObj != null) ? noteObj.toString() : "";
+
+            int compId = 0;
+            try {
+                compId = Integer.parseInt(tableModel.getValueAt(i, 9).toString());
+            } catch (Exception ex) {
+            }
+
             if ("PASS".equals(status)) {
                 passCount++;
             } else if ("RECHECK".equals(status)) {
                 recheckCount++;
             }
-            
 
-            
             InspectionDetail detail = new InspectionDetail(compId, vendorId, bau, rasa, tekstur, aiRes, status, path, note);
-            if (!repo.insertInspectionDetail(inspectionId, detail)) allSaved = false;
+            if (!repo.insertInspectionDetail(inspectionId, detail)) {
+                allSaved = false;
+            }
         }
-        
-        
+
         String workflowStatus;
-        
+
         if (passCount == totalRows) {
-            
+
             workflowStatus = "COMPLETED";
         } else if (recheckCount > 0) {
-            
+
             workflowStatus = "RECHECK";
         } else {
-            
+
             workflowStatus = "REJECTED";
         }
 
-        
         repo.updateBatchStatus(currentBatchUuid, workflowStatus);
 
-        
         if (allSaved) {
             String message = "Inspeksi Selesai!\nStatus Akhir Batch: " + workflowStatus;
-            
+
             if ("RECHECK".equals(workflowStatus)) {
                 message += "\n\n⚠️ Status 'RECHECK': Mohon ditindaklanjuti/diperiksa ulang.";
             } else if ("REJECTED".equals(workflowStatus)) {
@@ -789,16 +833,15 @@ public class PanelStage1 extends JPanel {
             } else {
                 message += "\n\n✅ Status 'COMPLETED': Semua bahan LOLOS.";
             }
-            
-            JOptionPane.showMessageDialog(this, message);
-            
-            resetFormState(); 
 
-            
+            JOptionPane.showMessageDialog(this, message);
+
+            resetFormState();
+
             Container parent = getParent();
             if (parent != null && parent.getLayout() instanceof CardLayout) {
                 CardLayout layout = (CardLayout) parent.getLayout();
-                layout.show(parent, "QUEUE"); 
+                layout.show(parent, "QUEUE");
             }
 
         } else {
